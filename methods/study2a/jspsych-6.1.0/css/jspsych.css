@@ -1,0 +1,296 @@
+/*
+ * CSS for jsPsych experiments.
+ *
+ * This stylesheet provides minimal styling to make jsPsych
+ * experiments look polished without any additional styles.
+ */
+
+ @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700);
+
+/* Container holding jsPsych content */
+
+ .jspsych-display-element {
+   display: flex;
+   flex-direction: column;
+   overflow-y: auto;
+ }
+
+ .jspsych-display-element:focus {
+   outline: none;
+ }
+
+ .jspsych-content-wrapper {
+   display: flex;
+   margin: auto;
+   flex: 1 1 100%;
+   width: 100%;
+ }
+
+ .jspsych-content {
+   max-width: 95%; /* this is mainly an IE 10-11 fix */
+   width: 70%;
+   text-align: center;
+   margin: auto; /* this is for overflowing content */
+   margin-top: 0px;
+ }
+
+ .jspsych-top {
+   align-items: flex-start;
+ }
+
+ .jspsych-middle {
+   align-items: center;
+ }
+
+/* fonts and type */
+
+.jspsych-display-element {
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-size: 18px;
+  line-height: 1.6em;
+}
+
+/* Form elements like input fields and buttons */
+
+.jspsych-display-element input[type="text"] {
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  font-size: 14px;
+}
+
+/* borrowing Bootstrap style for btn elements, but combining styles a bit */
+.jspsych-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 0px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: 'Open Sans', 'Arial', sans-serif;
+  cursor: pointer;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.jspsych-btn:hover {
+  background-color: #ddd;
+  border-color: #aaa;
+}
+
+.jspsych-btn:disabled {
+  background-color: #eee;
+  color: #aaa;
+  border-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* jsPsych progress bar */
+
+#jspsych-progressbar-container {
+  color: #555;
+  border-bottom: 1px solid #dedede;
+  background-color: #f9f9f9;
+  margin-bottom: 1em;
+  text-align: center;
+  padding: 8px 0px;
+  width: 100%;
+  line-height: 1em;
+}
+#jspsych-progressbar-container span {
+  font-size: 14px;
+  padding-right: 14px;
+}
+#jspsych-progressbar-outer {
+  background-color: #eee;
+  width: 50%;
+  margin: auto;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+#jspsych-progressbar-inner {
+  background-color: #aaa;
+  width: 0%;
+  height: 100%;
+}
+
+/* Control appearance of jsPsych.data.displayData() */
+#jspsych-data-display {
+  text-align: left;
+}
+
+
+
+
+/* PLUGIN: jspsych-xab */
+
+
+
+/* Hay plugin - new version */
+.fb-img{
+  border: 0;
+  position: relative;
+}
+
+.jspsych-feedback-hmd{
+  border: 0;
+	position: absolute;
+  top: 60%;
+  width: 15%;
+}
+
+
+.jspsych-stim-design{
+  margin: auto;
+  display: block;
+  margin-right: auto;
+  margin-top: auto;
+
+}
+
+.jspsych-bonus-design{
+	line-height: 30px;
+	margin-left: 600px;
+  margin-right: auto;
+  margin-top: auto;
+	position: absolute;
+  left: 250px;
+  text-align: center;
+	top: 90px;
+	width: 100px;
+  border-color: Black;
+  border-style: double;
+  border-width: thick;
+  font-weight: bold;
+  font-size: xx-large;
+
+}
+
+
+
+.feedback-design{
+  margin: auto;
+  display: block;
+  margin-right: auto;
+  margin-top: auto;
+}
+
+.jspsych-room-text{
+	line-height: 30px;
+	margin-left: 810px;
+  margin-right: auto;
+  margin-top: auto;
+	position: absolute;
+  left: 250px;
+  text-align: center;
+	top: 60px;
+	width: 180px;
+  border-color: Black;
+  border-style: solid;
+  border-width: thin;
+  font-weight: bold;
+  font-size: medium;
+  font-family: courier;
+
+}
+
+
+.agent-design{
+  margin: auto;
+  display: block;
+  margin-right: auto;
+  margin-top: 90px;
+  margin-left: 795px;
+  height: 130px;
+}
+
+/*.mine-bottom{
+position: relative;
+}*/
+
+
+.parent{
+    width:400px;
+    height:400px;
+    position:relative;
+    z-index:0;
+    margin: auto;
+    display: block;
+}
+
+/*.inner{
+    position:absolute;
+    z-index:1;
+    width:200px;
+    height:150px;
+    display: block;
+    margin: auto;
+    bottom: 0px;
+}*/
+
+.inner{
+  position:absolute;
+  z-index:1;
+  width:200px;
+  height:150px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  top: 250px;
+}
+
+.left_fb {
+float: left;
+left: 18%;
+}
+.right_fb {
+float: right;
+left: 68%;
+}
+
+
+.bg {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: auto;
+  height: auto;
+}
+.bg img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  min-width: 50%;
+  min-height: 50%;
+}
+
+
+.bubble {
+  background: black;
+  color: white;
+  padding: 4px 12px;
+  position: absolute;
+  border-radius: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.bubble::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: black;
+  top: -1px;
+  left: 50%;
+}
+
