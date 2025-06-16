@@ -1,0 +1,1606 @@
+<!doctype html>
+<html>
+<head>
+	<title>Wild West Study</title>
+
+	<!-- load standard plugins from pavlovia -->
+	<!-- <script type="text/javascript" src="lib/vendors/jspsych-6.1.0/jspsych.js"></script>
+
+	<script type="text/javascript" src="lib/vendors/jspsych-6.1.0/plugins/jspsych-external-html.js"></script>
+	<script type="text/javascript" src="lib/vendors/jspsych-6.1.0/plugins/jspsych-html-button-response.js"></script>
+	<script type="text/javascript" src="lib/vendors/jspsych-6.1.0/plugins/jspsych-survey-multi-choice.js"></script>
+	<script type="text/javascript" src="lib/vendors/jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
+	<script type="text/javascript" src="lib/vendors/jspsych-6.1.0/plugins/jspsych-instructions.js"></script> -->
+
+	<!-- load standard plugins if running locally -->
+	<script type="text/javascript" src="jspsych-6.1.0/jspsych.js"></script>
+
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-external-html.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-html-button-response.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-survey-multi-choice.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-survey-text.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-instructions.js"></script>
+
+	
+	<!-- load standard packages from pavlovia -->
+	<!-- <script type="text/javascript" src="lib/vendors/jquery-2.2.0.min.js"></script>
+	<script type="text/javascript" src="lib/jspsych-pavlovia-3.0.6.js"></script> -->
+
+	<!-- load custom plugins -->
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-feedback-threemines-randgen.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-threemines-pred-feedback.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-threemines-choice-feedback.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-readydig.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-threemines-pred.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-three-initial-choice-free.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-three-initial-choice-free-ob.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-three-initial-choice-forced.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-threemines-reveal.js"></script>
+	<script type="text/javascript" src="jspsych-6.1.0/plugins/jspsych-button-response-ehp.js"></script>
+
+	<!-- load style sheet -->
+	<link href="jspsych-6.1.0/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+
+
+<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/themes/black-tie/jquery-ui.min.css" rel="stylesheet" type="text/css"></link>
+	<head>
+	<style>
+	</style>
+	</head>
+
+</head>
+<body>
+</body>
+<script>
+
+// Behavioral Task for Exp 1 from Dorfman, et al., 2018, Psych Science //
+// Hayley Dorfman //
+
+// Modified by Emily Liquin //
+
+
+
+//SUBJECT IDENTIFIER
+var identifier = jsPsych.randomization.randomID(10);
+jsPsych.data.addProperties({subject: identifier}); //this adds a random alpha-numeric string (10 digits) to the data as a subject ID
+
+
+var timeline = [];
+
+
+//PAVLOVIA INITIALIZE
+/* This simple command will initialize the connection with pavlovia.org */
+// var pavlovia_init = {
+// 			type: "pavlovia",
+// 			command: "init"
+// 		};
+
+// timeline.push(pavlovia_init);
+
+
+
+// note - for this study, consent was completed on Qualtrics, then participants were redirected to the experiment on Pavlovia.
+
+
+
+// Add all images to be preloaded
+var all_images = ["img/teal_mine.png","img/teal2_mine.png","img/green2_mine.png",
+"img/purp2_mine.png","img/lavender_mine.png",
+"img/orange3_mine.png", "img/orange2_mine.png", "img/orange2_mine_selected.png",
+"img/pink1_mine.png","img/pink2_mine.png","img/red_mine.png",
+"img/yellow_mine.png","img/gray_mine.png",
+"img/blue_mine.png","img/cobalt_mine.png",
+"img/teal_mine_selected.png","img/teal2_mine_selected.png","img/green2_mine_selected.png",
+"img/purp2_mine_selected.png","img/lavender_mine_selected.png",
+"img/orange3_mine_selected.png",
+"img/pink1_mine_selected.png","img/pink2_mine_selected.png","img/red_mine_selected.png",
+"img/yellow_mine_selected.png","img/gray_mine_selected.png",
+"img/blue_mine_selected.png","img/cobalt_mine_selected.png",
+"img/gold.png", "img/rock.png", "img/navy_mine.png", "img/navy_mine_selected.png",
+"img/bandit.jpg","img/sheriff.jpg","img/tycoon.jpg","img/tycoon_bg.jpg","img/bandit_bg.jpg","img/sheriff_bg.jpg",
+"img/tycoon_rock.png","img/bandit_gold.png",
+"img/dig_example.png","img/tycoon_outcome_example.png","img/bandit_outcome_example.png","img/sheriff_outcome_example.png",
+"img/condition_example.png","img/instructions_patternonly_bg.jpg",
+ "img/outcome_blank.png", "img/tycoon_small.jpg",
+"img/money.jpg",
+"img/sheriff_outcome_example_slider.png",
+"img/bandit_outcome_example_slider.png",
+"img/dig_example_ready.png","img/dig_example_2.png",
+"img/dig_example_choice.png",
+"img/copperbandit_example_slider.png","img/sheriff_example_slider.png","img/coppertycoon_example_slider.png",
+"img/minechoice_threemines.png", "img/readydig_threemines.png","img/predict_threemines_copperiron.png", "img/videocamera.png", "img/copper.png", "img/iron.png", "img/uncertain_copperiron.png",
+"img/yes_bandit.png", "img/no_bandit.png", "img/yes_tycoon.png", "img/no_tycoon.png", "img/yes_sheriff.png", "img/no_sheriff.png"
+]
+
+
+
+// Assign variable instructions for conditions
+
+var coppertycoon_instructions1 = "<br> <p class='center-content'> During the <b>observation phase only</b>, the mines are under the influence of a charitable copper tycoon. Occasionally, he sneaks into all of the mines at night, leaving behind copper for the miners to find on the next dig.</p>"+
+				"<p class='center-content'><img src='img/tycoon.jpg'></img>"
+var coppertycoon_instructions2 = "<p class='center-content'> The copper tycoon visits the mines randomly three nights out of ten. So 30% of the time, you will receive copper as a result of the tycoon's goodwill regardless of which mine has been chosen, and this is not a true reflection of how much copper or iron the chosen mine contains. </p> "+
+				"<p class='center-content'><img src='img/uncertain_copperiron.png' style='width:400px'></img>"
+
+var copperbandit_instructions1 = "<br> <p class='center-content'> During the <b>observation phase only</b>, the mines are under the influence of a dastardly copper bandit. Occasionally, he sneaks into all of the mines at night, stealing the copper and leaving only iron behind for the next dig.</p>"+
+				"<p class='center-content'><img src='img/bandit.jpg'></img>"
+var copperbandit_instructions2 = "<p class='center-content'> The copper bandit visits the mines randomly three nights out of ten. So 30% of the time, you will receive iron as a result of the bandit's theft regardless of which mine has been chosen, and this is not a true reflection of how much copper or iron the chosen mine contains. </p> "+
+				"<p class='center-content'><img src='img/uncertain_copperiron.png' style='width:400px'></img>"
+
+	
+var sheriff_instructions1 = "<br> <p class='center-content'> During the <b>observation phase only</b>, the mines are under the influence of a sheriff, a prankster who likes to keep miners on their toes. Occasionally, he sneaks into all of the mines and moves things around at night, making it equally likely that you'll find copper or iron on the next dig.</p>"+
+				"<p class='center-content'><img src='img/sheriff.jpg'></img>"
+var sheriff_instructions2 = "<p class='center-content'> The sheriff visits the mines randomly three nights out of ten. So 30% of the time, you will receive copper or iron as a result of the sheriff's prank regardless of which mine has been chosen, and this is not a true reflection of how much copper or iron the chosen mine contains. </p> "+
+				"<p class='center-content'><img src='img/uncertain_copperiron.png' style='width:400px'></img>"
+
+
+
+// compile instructions and images by condition
+var latent_agent_conds = [{condition: "copper tycoon", first_instructions: coppertycoon_instructions1, second_instructions: coppertycoon_instructions2, slider: 'img/coppertycoon_example_slider.png', image: 'img/tycoon.jpg', image_reveal_yes: 'img/yes_tycoon.png', image_reveal_no: 'img/no_tycoon.png'}, {condition: "copper bandit", first_instructions: copperbandit_instructions1, second_instructions: copperbandit_instructions2, slider: 'img/copperbandit_example_slider.png', image: 'img/bandit.jpg', image_reveal_yes: 'img/yes_bandit.png', image_reveal_no: 'img/no_bandit.png'}, {condition: "sheriff", first_instructions: sheriff_instructions1, second_instructions: sheriff_instructions2, slider: 'img/sheriff_example_slider.png', image: 'img/sheriff.jpg', image_reveal_yes: 'img/yes_sheriff.png', image_reveal_no: 'img/no_sheriff.png'}]
+
+
+var cond = jsPsych.data.getURLVariable('cond')
+
+// var cond = "<%= cond %>"; // conditions are 1 - 6
+
+// set task condition and agent condition
+if(cond == 1){
+	var agent_cond = latent_agent_conds[0]
+	var task_cond = "Prediction"
+} else if(cond == 2) {
+	var agent_cond = latent_agent_conds[1]
+	var task_cond = "Choice"
+} else if (cond == 3) {
+	var agent_cond = latent_agent_conds[2]
+	var task_cond = "Prediction"
+} else if (cond == 4) {
+	var agent_cond = latent_agent_conds[0]
+	var task_cond = "Choice"
+} else if (cond == 5) {
+	var agent_cond = latent_agent_conds[1]
+	var task_cond = "Prediction"
+} else if (cond == 6) {
+	var agent_cond = latent_agent_conds[2]
+	var task_cond = "Choice"
+}
+
+
+
+// get block id and weights based on condition
+if(agent_cond.condition == "copper tycoon"){
+    var block_id = "benevolent"
+    var weights_agent = [1, 0]
+} else if (agent_cond.condition == "copper bandit"){
+    var block_id = "adversarial"
+    var weights_agent = [0, 1]
+} else if (agent_cond.condition == "sheriff"){
+    var block_id = "random"
+    var weights_agent = [.5, .5]
+}
+
+
+
+/*define mine images*/
+var all_mine_images = [{unsel: "img/green2_mine.png", sel: "img/green2_mine_selected.png"},
+{unsel: "img/purp2_mine.png", sel:"img/purp2_mine_selected.png"}, {unsel: "img/lavender_mine.png", sel: "img/lavender_mine_selected.png"}, 
+{unsel: "img/pink2_mine.png", sel: "img/pink2_mine_selected.png"}, {unsel: "img/red_mine.png", sel: "img/red_mine_selected.png"},
+{unsel: "img/yellow_mine.png", sel: "img/yellow_mine_selected.png"}, {unsel: "img/gray_mine.png", sel: "img/gray_mine_selected.png"}, {unsel: "img/blue_mine.png", sel: "img/blue_mine_selected.png"},
+{unsel: "img/navy_mine.png", sel: "img/navy_mine_selected.png"}]
+    
+
+// shuffle mine_images
+var mine_image = jsPsych.randomization.repeat(all_mine_images, 1)
+
+
+// These are the mines for the practice
+var all_mine_images_prac = [{unsel: "img/teal_mine.png", sel: "img/teal_mine_selected.png"},{unsel: "img/cobalt_mine.png", sel: "img/cobalt_mine_selected.png"}, {unsel: "img/orange2_mine.png", sel: "img/orange2_mine_selected.png"}]
+var mine_image_prac = all_mine_images_prac;
+
+// image for unchosen mine (blank)
+var outcome_blank = "img/outcome_blank.png";
+
+
+
+
+
+////////////////// PRACTICE - SET UP TRIALS ////////////////////
+
+// set feedback probabilities for practice 
+var weights_practice = jsPsych.randomization.repeat([0.2, 0.65, 0.8], 1)
+
+var a_weight_practice = weights_practice[0]; // probability for left mine
+var b_weight_practice  = weights_practice[1]; // probability for middle mine
+var c_weight_practice  = weights_practice[2]; // probability for right mine
+var weights_free_a_practice  = [a_weight_practice, 1-a_weight_practice]; // probabilities for free will (when intervention doesn't occur)
+var weights_free_b_practice  = [b_weight_practice, 1-b_weight_practice]; // probabilities for free will (when intervention doesn't occur)
+var weights_free_c_practice  = [c_weight_practice, 1-c_weight_practice]; // probabilities for free will (when intervention doesn't occur)
+
+
+/////////////set number of trials for practice
+var n_practice_trials = 3
+var n_practice_obs_trials = 6
+var n_practice_trials_2 = 3
+
+// Set choices for practice test phases
+var prac_choices = jsPsych.randomization.repeat([1, 2, 3], 1)
+var prac_choices_2 = jsPsych.randomization.repeat([1, 2, 3], 1)
+
+//Set choices for practice observation phase
+var prac_choices_obs = jsPsych.randomization.repeat([1, 2, 3], n_practice_obs_trials/3)
+
+
+// Set sequence of interventions for practice
+	if(Math.random < 0.5) {
+		var n_latent_trials = Math.floor(n_practice_obs_trials*.30); //number of latent trials per block
+	} else {
+		var n_latent_trials = Math.ceil(n_practice_obs_trials*.30); //number of latent trials per block
+	}
+	var n_reg_trials = n_practice_obs_trials-n_latent_trials; //number of normal trials per block
+	var ones = repeatSimple(1,n_latent_trials);
+	var zeros = repeatSimple(0,n_reg_trials);
+	var trial_array = ones.concat(zeros) //array of 1s and 0s, where 1 is intervention occurred and 0 is no intervention
+	var latent_array_practice_obs = jsPsych.randomization.repeat(trial_array, 1) //shuffle latent agent intervention trial order
+
+// Set sequence of interventions for practice test phases
+var latent_array_practice = repeatSimple(0, n_practice_trials)
+var latent_array_practice_2 = repeatSimple(0, n_practice_trials_2);
+
+
+/////////// Set reveals for practice ///////////
+// practice
+var n_reveal = Math.round(n_practice_obs_trials*0.2) // HOW MANY SHOULD BE REVEALED IN PRACTICE
+var noreveal = repeatSimple(0, n_practice_obs_trials - n_reveal)
+var reveal = repeatSimple(1, n_reveal)
+var prac_reveal_array = jsPsych.randomization.repeat(noreveal.concat(reveal), 1);
+
+
+var prac_word_array = []
+var prac_reveal_image_array = []
+for (var n = 0; n < latent_array_practice_obs.length; n++){
+	if(latent_array_practice_obs[n] == 0){
+		prac_word_array.push("did not")
+		prac_reveal_image_array.push(agent_cond.image_reveal_no)
+	} else {
+		prac_word_array.push("did")
+		prac_reveal_image_array.push(agent_cond.image_reveal_yes)
+	}
+}
+
+
+prac_obs_set = {set: "prac", weights_free_a: weights_free_a_practice, weights_free_b: weights_free_b_practice, weights_free_c: weights_free_c_practice, n_trials_forced: 0, n_trials_free: 6, n_trials: 6, prac_choices_obs: prac_choices_obs, latent_array1: latent_array_practice_obs, reveal_array: prac_reveal_array, word_array: prac_word_array, reveal_image_array: prac_reveal_image_array}
+
+
+
+/////////////////////// OBSERVATION - SET UP TRIALS ////////////////////////////
+
+
+function observation_setup(set) {
+	
+	// generate feedback probabilities
+	var weights = jsPsych.randomization.repeat([0.2, 0.65, 0.8],1)
+
+	var a_weight = weights[0]; // probability for left mine
+	var b_weight = weights[1]; // probability for middle mine
+	var c_weight = weights[2]; // probability for right mine
+	var weights_free_a = [a_weight, 1-a_weight]; // probabilities for free will (when intervention doesn't occur)
+	var weights_free_b = [b_weight, 1-b_weight]; // probabilities for free will (when intervention doesn't occur)
+	var weights_free_c = [c_weight, 1-c_weight]; // probabilities for free will (when intervention doesn't occur)
+
+	// set number of trials
+	var n_trials_forced1 = 6
+	var n_trials_forced2 = 9 
+	var n_trials = n_trials_forced1 + n_trials_forced2
+
+	// set forced choices
+
+	var choices_unshuffle = repeatSimple(1, n_trials_forced1/3).concat(repeatSimple(2, n_trials_forced1/3), repeatSimple(3, n_trials_forced1/3))
+	var choices_forced1 = jsPsych.randomization.repeat(choices_unshuffle, 1)
+
+	var choices_unshuffle = repeatSimple(1, n_trials_forced2/3).concat(repeatSimple(2, n_trials_forced2/3), repeatSimple(3, n_trials_forced2/3))
+	var choices_forced2 = jsPsych.randomization.repeat(choices_unshuffle, 1)
+
+	//set forced feedback
+	var feedback_80 = jsPsych.randomization.repeat([1,1], 1)
+	var feedback_65 = jsPsych.randomization.repeat([1,0], 1)
+	var feedback_20 = jsPsych.randomization.repeat([0,0], 1)
+
+	var feedback_forced1 = []
+
+	for(var i = 0; i < choices_forced1.length; i++){
+		if(choices_forced1[i] == 1){
+			if(a_weight == 0.2){
+				feedback_forced1.push(feedback_20[0])
+				feedback_20.shift()
+			} else if(a_weight == 0.65){
+				feedback_forced1.push(feedback_65[0])
+				feedback_65.shift()				
+			} else if(a_weight == 0.8){
+				feedback_forced1.push(feedback_80[0])
+				feedback_80.shift()		
+			}
+		} else if(choices_forced1[i] == 2){
+			if(b_weight == 0.2){
+				feedback_forced1.push(feedback_20[0])
+				feedback_20.shift()
+			} else if(b_weight == 0.65){
+				feedback_forced1.push(feedback_65[0])
+				feedback_65.shift()				
+			} else if(b_weight == 0.8){
+				feedback_forced1.push(feedback_80[0])
+				feedback_80.shift()		
+			}
+		} else if(choices_forced1[i] == 3){
+			if(c_weight == 0.2){
+				feedback_forced1.push(feedback_20[0])
+				feedback_20.shift()
+			} else if(c_weight == 0.65){
+				feedback_forced1.push(feedback_65[0])
+				feedback_65.shift()				
+			} else if(c_weight == 0.8){
+				feedback_forced1.push(feedback_80[0])
+				feedback_80.shift()		
+			}
+		}
+	}
+
+
+	// set sequence of interventions - ONLY DURING Forced 2 
+	if(Math.random < 0.5) {
+		var n_latent_trials = Math.floor(n_trials_forced2*.30); //number of latent trials per block
+	} else {
+		var n_latent_trials = Math.ceil(n_trials_forced2*.30); //number of latent trials per block
+	}
+	var n_reg_trials = n_trials_forced2-n_latent_trials; //number of normal trials per block
+	var ones = repeatSimple(1,n_latent_trials);
+	var zeros = repeatSimple(0,n_reg_trials);
+	var trial_array = ones.concat(zeros) //array of 1s and 0s, where 1 is intervention occurred and 0 is no intervention
+	var latent_array1 = jsPsych.randomization.repeat(trial_array, 1) //shuffle latent agent intervention trial order
+
+	// set reveals 
+	var n_reveal = Math.round(n_trials*0.2) // HOW MANY SHOULD BE REVEALED
+	var noreveal = repeatSimple(0, n_trials_forced2 - n_reveal)
+	var reveal = repeatSimple(1, n_reveal)
+	var reveal_array = jsPsych.randomization.repeat(noreveal.concat(reveal), 1);
+
+	var word_array = []
+	var reveal_image_array = []
+	for (var n = 0; n < latent_array1.length; n++){
+		if(latent_array1[n] == 0){
+			word_array.push("did not")
+			reveal_image_array.push(agent_cond.image_reveal_no)
+		} else {
+			word_array.push("did")
+			reveal_image_array.push(agent_cond.image_reveal_yes)
+		}
+	}
+
+
+
+	set_array = {set: set, weights_free_a: weights_free_a, weights_free_b: weights_free_b, weights_free_c: weights_free_c, n_trials_forced1: n_trials_forced1, n_trials_forced2: n_trials_forced2, n_trials: n_trials, forced_choices1: choices_forced1, forced_choices2: choices_forced2, feedback_forced1: feedback_forced1, latent_array1: latent_array1, reveal_array: reveal_array, word_array: word_array, reveal_image_array: reveal_image_array}
+
+	return(set_array)
+}
+
+set_array_1 = observation_setup(1)
+set_array_2 = observation_setup(2)
+
+
+
+// //////// ////// TEST SETUP //////////////////////
+
+function test_setup(set) {
+	var n_test_trials = 6
+
+	if(set == 1){
+		var weights_free_a = set_array_1.weights_free_a
+		var weights_free_b = set_array_1.weights_free_b
+		var weights_free_c = set_array_1.weights_free_c
+	} else if(set == 2){
+		var weights_free_a = set_array_2.weights_free_a
+		var weights_free_b = set_array_2.weights_free_b
+		var weights_free_c = set_array_2.weights_free_c		
+	} else if(set == 3){
+		var weights_free_a = set_array_3.weights_free_a
+		var weights_free_b = set_array_3.weights_free_b
+		var weights_free_c = set_array_3.weights_free_c		
+	}
+
+	var choice1s = repeatSimple(1, n_test_trials/3)
+	var choice2s = repeatSimple(2, n_test_trials/3)
+	var choice3s = repeatSimple(3, n_test_trials/3)
+	var all_choice = choice1s.concat(choice2s, choice3s)
+	var test_choices = jsPsych.randomization.repeat(all_choice, 1)
+	
+	// test phase: no interventions
+	var latent_array_test = repeatSimple(0,n_test_trials);
+
+	test_array = {set: set, weights_free_a: weights_free_a, weights_free_b: weights_free_b, weights_free_c: weights_free_c, n_test_trials: n_test_trials, test_choices: test_choices, latent_array_test: latent_array_test}
+
+	return(test_array)
+}
+
+test_array_1 = test_setup(1)
+test_array_2 = test_setup(2)
+
+
+
+
+//// function to make trials for observation
+
+function make_observation_forced1(set, mine1, mine2, mine3){
+	var block_1 = [];
+
+	for (var i = 0; i < set.n_trials_forced1; i++){ // loop through the forced trials
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine1.unsel,mine2.unsel,mine3.unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+
+		var initial_choice={
+			type: 'three-initial-choice-forced',
+			block_id: function(){return(block_id)},
+			prompt: "<p class='center-content'><b>Here's where your miners choose to dig.</b><BR>",
+			stimuli: [mine1,mine2, mine3],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			choices: ['See outcome'],
+			timeline:[{choice_seq: set.forced_choices1[i]}]
+				};
+
+		
+		var trial_outcome={
+			type: 'feedback-threemines-randgen',
+			block_id: function(){return(block_id)},
+			weights: [set.weights_free_a, set.weights_free_b, set.weights_free_c],
+			prompt: function(){
+				return("<p class='center-content'><b>How curious are you about why this outcome occurred (i.e., about whether or not the " + agent_cond.condition + " intervened)?</b>")},
+			stimuli: [mine1,mine2,mine3,outcome_blank],
+			labels: ["Not at all curious", "Very curious"],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			timeline: [{feedback_forced: set.feedback_forced1[i], latent_intervention: 0, reveals: 0}],
+		};
+
+
+		block_1.push(ready_dig);
+		block_1.push(initial_choice);
+		block_1.push(trial_outcome);
+
+
+	};
+
+return(block_1)
+
+}
+
+
+
+
+// Trials Block
+function make_observation_forced2(set, mine1, mine2, mine3){
+	var block_1 = [];
+
+	for (var i = 0; i < set.n_trials_forced2; i++){ // loop through the free response trials
+
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine1.unsel,mine2.unsel,mine3.unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+
+
+		var initial_choice={
+			type: 'three-initial-choice-forced',
+			block_id: function(){return(block_id)},
+			prompt: "<p class='center-content'><b>Here's where your miners choose to dig.</b><BR>",
+			stimuli: [mine1,mine2, mine3],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			choices: ['See outcome'],
+			timeline:[{choice_seq: set.forced_choices2[i]}]
+				};
+
+
+
+		var trial_outcome={
+			type: 'feedback-threemines-randgen',
+			block_id: function(){return(block_id)},
+			weights: [set.weights_free_a, set.weights_free_b, set.weights_free_c],
+			prompt: function(){
+				return("<p class='center-content'><b>How curious are you about why this outcome occurred (i.e., about whether or not the " + agent_cond.condition + " intervened)?</b>")},
+			stimuli: [mine1, mine2, mine3 ,outcome_blank],
+			labels: ["Not at all curious", "Very curious"],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			timeline: [{latent_intervention: set.latent_array1[i], reveals: set.reveal_array[i]}],
+		};
+
+
+		block_1.push(ready_dig);
+		block_1.push(initial_choice);
+		block_1.push(trial_outcome);
+
+		if(set.reveal_array[i] == 1){
+			var reveal={
+			type: 'threemines-reveal',
+			block_id: function(){return(block_id)},
+			stimuli: [mine1, mine2, mine3 ,outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			blocktype: "Observation",
+			agent_image: function(){
+			if(set.word_array[i] == "did"){
+				return(agent_cond.image_reveal_yes)
+			} else {
+				return(agent_cond.image_reveal_no)
+			}
+		},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			timeline: [{latent_intervention: set.latent_array1[i], prompt: "The security camera recorded what happened! The " + agent_cond.condition + " <b>" + set.word_array[i] + "</b> intervene to cause this outcome.", agent_image: set.reveal_image_array[i]}]
+		};
+		block_1.push(reveal)
+		}
+
+	};
+
+	return(block_1)
+
+}
+
+
+///Function to make trials for test phase
+
+function make_test(set, mine1, mine2, mine3){
+	var testblock = [];
+
+	if(task_cond == "Prediction"){
+		/* define instructions block */
+		var pred_instructions_final = {
+				type: 'instructions',
+				pages: function(){
+					return([
+						"<p class='center-content'> Now, it's time for the <b>PREDICTION PHASE</b>. Don't forget that the " +  agent_cond.condition + " <b>does not</b> interfere during the prediction phase. Remember, you will earn 5 cents of <b>real bonus money</b> each time you make a <b>CORRECT PREDICTION</b>.</p>"
+				])},
+				show_clickable_nav: true
+			};
+			testblock.push(pred_instructions_final)
+
+			for (var i = 0; i < set.n_test_trials; i++){ // loop through the 50 trials
+
+				var ready_dig={
+					type: 'readydig',
+					block_id: function(){return(block_id)},
+					choices: ['Ready to dig!'],
+					stimuli: [mine1.unsel,mine2.unsel,mine3.unsel],
+					timing_post_trial: 0,
+					screen_color: function(){
+						document.documentElement.style.background = "White";
+					},
+					bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+					button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+				};
+
+				var initial_choice={
+					type: 'threemines-pred',
+					block_id: function(){return(block_id)},
+					choices: function(){
+						if(counterbalance_order == "CopperFirst"){
+							return(['<img src = "img/copper.png" height=150px>', '<img src = "img/iron.png" height=150px>'])
+						} else if(counterbalance_order == "IronFirst"){
+							return(['<img src = "img/iron.png" height=150px>', '<img src = "img/copper.png" height=150px>'])
+						}
+					},
+					prompt: function(){
+						if(counterbalance_order == "CopperFirst"){
+							return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get copper or iron?</b><BR>")
+						} else if(counterbalance_order == "IronFirst"){
+							return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get iron or copper?</b><BR>")
+						}
+					},
+					stimuli: [mine1, mine2, mine3],
+					timing_post_trial: 0,
+					screen_color: function(){
+						document.documentElement.style.background = "White";
+					},
+					bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+					timeline: [
+						{choice_seq: set.test_choices[i]}
+					]
+				};
+
+				var trial_outcome={
+					type: 'threemines-pred-feedback',
+					block_id: function(){return(block_id)},
+					weights: [set.weights_free_a, set.weights_free_b, set.weights_free_c],
+					stimuli: [mine1,mine2,mine3,outcome_blank],
+					feedback_image: ["img/iron.png","img/copper.png"],
+					choices: ["Next"],
+					bonus_amount: function(){return(bonus_counter)},
+					timeline: [{latent_intervention: set.latent_array_test[i], prev_choice: set.test_choices[i]}],
+					on_finish: function(data){
+						if(data.pred_correct == "correct"){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+				};
+				testblock.push(ready_dig);
+				testblock.push(initial_choice);
+				testblock.push(trial_outcome);
+			};
+	} else if(task_cond == "Choice"){
+
+			/* define instructions block */
+			var choice_instructions_final = {
+				type: 'instructions',
+				pages: [
+						"<p class='center-content'> Now, it's time for the <b>CHOICE PHASE</b>. Don't forget that the " +  agent_cond.condition + " <b>does not</b> interfere during the choice phase. Remember, you will earn 5 cents of <b>real bonus money</b> each time you mine <b>COPPER</b>.</p>"
+				],
+				show_clickable_nav: true
+			};
+			testblock.push(choice_instructions_final)
+
+
+			for (var i = 0; i < set.n_test_trials; i++){ // loop through the 50 trials
+
+				var ready_dig={
+					type: 'readydig',
+					block_id: function(){return(block_id)},
+					choices: ['Ready to dig!'],
+					stimuli: [mine1.unsel,mine2.unsel,mine3.unsel],
+					timing_post_trial: 0,
+					screen_color: function(){
+						document.documentElement.style.background = "White";
+					},
+					bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+					button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+
+				};
+
+				var initial_choice={
+					type: 'three-initial-choice-free',
+					block_id: function(){return(block_id)},
+					choices: ['Dig Here','Dig Here', 'Dig Here'], // choice between two mines
+					prompt: "<p class='center-content'><b>Choose a mine</b><BR>",
+					stimuli: [mine1, mine2, mine3],
+					timing_post_trial: 0,
+					screen_color: function(){
+						document.documentElement.style.background = "White";
+					},
+					bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+					button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+				};
+
+
+				var choice_outcome={
+					type: 'threemines-choice-feedback',
+					block_id: function(){return(block_id)},
+					weights: [set.weights_free_a, set.weights_free_b, set.weights_free_c],
+					stimuli: [mine1, mine2, mine3, outcome_blank],
+					feedback_image: ["img/iron.png","img/copper.png"],
+					choices: ["Next"],
+					bonus_amount: function(){return(bonus_counter)},
+					timeline: [{latent_intervention: set.latent_array_test[i]}],
+					on_finish: function(data){
+						if(data.gamble_feedback == 1){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+				};
+
+				testblock.push(ready_dig);
+				testblock.push(initial_choice);
+				testblock.push(choice_outcome);
+			};
+
+	}
+	
+	return(testblock)
+}
+
+
+
+
+
+
+//define constant weights
+
+var results = [1, 0]; // values to return - gold or rocks
+
+var counterbalance_order = jsPsych.randomization.sampleWithoutReplacement(["CopperFirst", "IronFirst"], 1)
+
+
+function repeatSimple(element, times)
+{
+    var result = [];
+    for(var i=0;i<times;i++)
+      result.push(element);
+    return result;
+}
+
+
+
+
+jsPsych.data.addProperties({
+	Study: "Incentives multiple sets, no choice",
+	Agent_Condition: agent_cond.condition, // agent condition
+	Task_Condition: task_cond // task condition
+});
+
+
+
+
+//////////////////////////////////// THIS IS WHERE THE EXPERIMENT ACTUALLY STARTS //////////////////////////////////////////
+
+
+//////////////////////////////////////////////////// Instructions part 1 ////////////////////////////////////////////////////
+		/* define instructions block */
+var instructions_block_choice = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'> Welcome to the experiment!</p>"+
+		"<p class='center-content'> In this experiment, imagine you're working with a team of miners in the Wild West.</p>", "<br>" + 
+		"<p class='center-content'> You and your miners are in charge of digging in three mines, which have different probabilities of having copper or iron.</p>" + 
+		"<p class='center-content'><img src='img/copperiron_labels.png' width='40%'></p>", "<br>" + 
+		"<p class='center-content'> Each different mine color indicates a unique mine with a unique probability of having copper as opposed to iron.</p>"+
+		"<p class='center-content'><img src='img/teal_mine.png' width='25%'></img><img src='img/cobalt_mine.png' width='25%'></img><img src='img/orange2_mine.png' width='25%'></img>" + 
+		"<p class='center-content'> <p> For example, the teal mine, the blue mine, and the orange mine all have a <strong>different</strong> chance of giving you copper as opposed to iron.</p>", "<br>" + 
+		"<p class='center-content'> Copper is more valuable than iron in your region, and it's best if you can get lots of copper to sell.</p>" + 
+		"<p class='center-content'> As a result, your main task is to <b>CHOOSE</b> between the three mines, in order to find as much copper as possible.</p>", "<br>" + 
+		"<p class='center-content'> On each turn, click the 'Ready to dig!' button below the mines when you're ready for the turn to start.</p>" + 
+		"<p class='center-content'> <img src='img/readydig_threemines.png' style='width:800px'></img> </p>", "<br>" + 
+		"<p class='center-content'> Then, to choose a mine, click the button on the screen below the mine you want your miners to dig in. </p>" + 
+		"<p class='center-content'> <img src='img/minechoice_threemines.png' style='width:800px'></img></p>", "<br>" + 
+		"<p class='center-content'> After you choose to dig in a mine, you will see whether your miners found copper or iron. You will earn 5 cents of <b>real bonus money</b> each time you mine <b>COPPER</b>. </p>", "<br>" + 
+		"<p class='center-content'> Now try this task for a few turns. Press 'Next' to proceed."
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+
+var instructions_block_pred = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'> Welcome to the experiment!</p>"+
+		"<p class='center-content'> In this experiment, imagine you're working with a team of miners in the Wild West.</p>", "<br>" + 
+		"<p class='center-content'> You are in charge of processing the output from three mines, which have different probabilities of having copper or iron.</p>" + 
+		"<p class='center-content'><img src='img/copperiron_labels.png' width='40%'></p>", "<br>" + 
+		"<p class='center-content'> Each different mine color indicates a unique mine with a unique probability of having copper as opposed to iron.</p>"+
+		"<p class='center-content'><img src='img/teal_mine.png' width='25%'></img><img src='img/cobalt_mine.png' width='25%'></img><img src='img/orange2_mine.png' width='25%'></img>" + 
+		"<p class='center-content'> <p> For example, the teal mine, the blue mine, and the orange mine all have a <strong>different</strong> chance of giving you copper as opposed to iron.</p>", "<br>" + 
+		"<p class='center-content'> Copper and iron require different equipment to process, and it's best if you can set up the proper equipment before the miners return from the mines each day.</p>" + 
+		"<p class='center-content'> As a result, your main task is to <b>PREDICT</b> what you're going to receive from the three mines, in order to set up the correct equipment as often as possible.</p>", "<br>" + 
+		"<p class='center-content'> On each turn, click the 'Ready to dig!' button below the mines when you're ready for the turn to start.</p>" + 
+		"<p class='center-content'> <img src='img/readydig_threemines.png' style='width:800px'></img> </p>", "<br>" + 
+		"<p class='center-content'> Then you'll see where your miners chose to dig that day. To make a prediction about what they'll find, click the button corresponding to the outcome (copper or iron) you expect to receive. </p>" + 
+		"<p class='center-content'> <img src='img/predict_threemines_copperiron.png' style='width:800px'></img></p>", "<br>" + 
+		"<p class='center-content'> After you make a prediction, you will see whether your miners found copper or iron. You will earn 5 cents of <b>real bonus money</b> each time you make a <b>CORRECT PREDICTION</b>. </p>", "<br>" + 
+		"<p class='center-content'> Now try this task for a few turns. Press 'Next' to proceed."
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+if(task_cond == "Choice"){
+	timeline.push(instructions_block_choice)
+  } else if(task_cond == "Prediction") {
+	timeline.push(instructions_block_pred)
+  }
+
+
+
+var bonus_counter = 0;
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////// PRactice trials, part 1 ////////////////////////////////////////////////////
+
+if(task_cond == "Prediction"){
+	for (var i = 0; i < n_practice_trials; i++){ // loop through the practice trials
+
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine_image_prac[0].unsel,mine_image_prac[1].unsel,mine_image_prac[2].unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+		var initial_choice={
+			type: 'threemines-pred',
+			block_id: function(){return(block_id)},
+			choices: function(){
+				if(counterbalance_order == "CopperFirst"){
+					return(['<img src = "img/copper.png" height=150px>', '<img src = "img/iron.png" height=150px>'])
+				} else if(counterbalance_order == "IronFirst"){
+					return(['<img src = "img/iron.png" height=150px>', '<img src = "img/copper.png" height=150px>'])
+				}
+			},
+			prompt: function(){
+				if(counterbalance_order == "CopperFirst"){
+					return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get copper or iron?</b><BR>")
+				} else if(counterbalance_order == "IronFirst"){
+					return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get iron or copper?</b><BR>")
+				}
+			},
+			stimuli: [mine_image_prac[0], mine_image_prac[1], mine_image_prac[2]],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			timeline: [
+				{choice_seq: prac_choices[i]}
+			],
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					}
+		};
+
+		var trial_outcome={
+			type: 'threemines-pred-feedback',
+			block_id: function(){return(block_id)},
+			weights: [weights_free_a_practice, weights_free_b_practice, weights_free_c_practice],
+			stimuli: [mine_image_prac[0],mine_image_prac[1],mine_image_prac[2],outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			reveals: 0,
+			timeline: [{latent_intervention: latent_array_practice[i], prev_choice: prac_choices[i]}],
+			bonus_amount: function(){return(bonus_counter)},
+			on_finish: function(data){
+						if(data.pred_correct == "correct"){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+		};
+		timeline.push(ready_dig);
+		timeline.push(initial_choice);
+		timeline.push(trial_outcome);
+		};
+} else if (task_cond == "Choice"){
+
+	for (var i = 0; i < n_practice_trials; i++){ // loop through the practice trials
+
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine_image_prac[0].unsel,mine_image_prac[1].unsel,mine_image_prac[2].unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+		var initial_choice={
+			type: 'three-initial-choice-free',
+			block_id: function(){return(block_id)},
+			choices: ['Dig Here','Dig Here', 'Dig Here'], // choice between two mines
+			prompt: "<p class='center-content'><b>Choose a mine</b><BR>",
+			stimuli: [mine_image_prac[0],mine_image_prac[1], mine_image_prac[2]],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+
+		var choice_outcome={
+			type: 'threemines-choice-feedback',
+			block_id: function(){return(block_id)},
+			weights: [weights_free_a_practice, weights_free_b_practice, weights_free_c_practice],
+			stimuli: [mine_image_prac[0],mine_image_prac[1], mine_image_prac[2], outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			reveals: 0,
+			timeline: [{latent_intervention: latent_array_practice[i]}],
+			bonus_amount: function(){return(bonus_counter)},
+			on_finish: function(data){
+						if(data.gamble_feedback == 1){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+		};
+
+		timeline.push(ready_dig);
+		timeline.push(initial_choice);
+		timeline.push(choice_outcome);
+	};
+}
+
+
+
+
+//////////////////////////////////////////////////// Instructions part 2 ////////////////////////////////////////////////////
+
+
+var instructions_block_2_choice = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br><p class='center-content'> As you can see, this task can be difficult when you don't know how likely each mine is to give you copper or iron. Before you make more choices to earn bonus money, you'll enter the <strong>OBSERVATION PHASE</strong>. In the observation phase, you'll watch your miners dig in the three mines <em>without</em> earning bonus money. Use this time to familiarize yourself with the mines so you can earn the most money when you choose between the mines in the next phase.",
+		"<p class='center-content'> Before you enter the observation phase, there's one more thing you need to know." + agent_cond.first_instructions, "<br>" + 
+		agent_cond.second_instructions, "<br>" + 
+		"<p class='center-content'> Knowing that the " + agent_cond.condition + " interferes with your mines, your team of miners has set up a security camera. However, the wires are faulty, and the camera doesn't always record. On some turns, when the camera works, you'll be told whether the " + agent_cond.condition + " intervened when the turn is over." +
+		"<p class='center-content'> <img src='img/videocamera.png' style='width:200px'></img> </p>", "<br>" + 
+		"<p class='center-content'> Now you'll enter the observation phase - and remember, the " + agent_cond.condition + " may intervene on 30% of turns, but you'll occasionally gain additional information from the security camera. You will <b>not</b> earn bonus money in the observation phase. </p>" + 
+		"<p class='center-content'> The " + agent_cond.condition + " only interferes with the mines during the observation phase. When you return to making choices to earn bonus money, all the copper and iron you receive will be from the mines. </p>"
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+var instructions_block_2_pred = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br><p class='center-content'> As you can see, this task can be difficult when you don't know how likely each mine is to give you copper or iron. Before you make more predictions to earn bonus money, you'll enter the <strong>OBSERVATION PHASE</strong>. In the observation phase, you'll watch your miners dig in the three mines <em>without</em> earning bonus money. Use this time to familiarize yourself with the mines so you can earn the most money when you make predictions in the next phase.",
+		"<p class='center-content'> Before you enter the observation phase, there's one more thing you need to know." + agent_cond.first_instructions, "<br>" + 
+		agent_cond.second_instructions, "<br>" + 
+		"<p class='center-content'> Knowing that the " + agent_cond.condition + " interferes with your mines, your team of miners has set up a security camera. However, the wires are faulty, and the camera doesn't always record. On some turns, when the camera works, you'll be told whether the " + agent_cond.condition + " intervened when the turn is over." +
+		"<p class='center-content'> <img src='img/videocamera.png' style='width:200px'></img> </p>", "<br>" + 
+		"<p class='center-content'> Now you'll enter the observation phase - and remember, the " + agent_cond.condition + " may intervene on 30% of turns, but you'll occasionally gain additional information from the security camera. You will <b>not</b> earn bonus money in the observation phase. </p>" + 
+		"<p class='center-content'> The " + agent_cond.condition + " only interferes with the mines during the observation phase. When you return to making predictions to earn bonus money, all the copper and iron you receive will be from the mines. </p>"
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+
+if(task_cond == "Choice"){
+	timeline.push(instructions_block_2_choice)
+  } else if(task_cond == "Prediction") {
+	timeline.push(instructions_block_2_pred)
+  }
+
+
+
+
+
+//////////////////////////////////////////////////// practice trials observation ////////////////////////////////////////////////////
+
+
+
+for (var i = 0; i < n_practice_obs_trials; i++){ // loop through the free response trials
+
+	var ready_dig={
+		type: 'readydig',
+		block_id: function(){return(block_id)},
+		choices: ['Ready to dig!'],
+		stimuli: [mine_image_prac[0].unsel,mine_image_prac[1].unsel,mine_image_prac[2].unsel],
+		timing_post_trial: 0,
+		screen_color: function(){
+			document.documentElement.style.background = "White";
+		},
+		bonus_phase: function(){
+			return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+		},
+		button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+	};
+
+
+	var initial_choice={
+			type: 'three-initial-choice-forced',
+			block_id: function(){return(block_id)},
+			prompt: "<p class='center-content'><b>Here's where your miners choose to dig.</b><BR>",
+			stimuli: [mine_image_prac[0], mine_image_prac[1], mine_image_prac[2]],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+				return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+			},
+			choices: ['See outcome'],
+			timeline:[{choice_seq: prac_obs_set.prac_choices_obs[i]}]
+				};
+
+	var trial_outcome={
+			type: 'threemines-choice-feedback',
+			block_id: "practice_observation",
+			weights: [prac_obs_set.weights_free_a, prac_obs_set.weights_free_b, prac_obs_set.weights_free_c],
+			stimuli: [mine_image_prac[0],mine_image_prac[1], mine_image_prac[2], outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			reveals: 0,
+			timeline: [{latent_intervention: prac_obs_set.latent_array1[i], reveals: prac_obs_set.reveal_array[i]}],
+			bonus_phase: function(){
+			return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+		}
+		};
+
+	timeline.push(ready_dig);
+	timeline.push(initial_choice);
+	timeline.push(trial_outcome);
+
+	if(prac_obs_set.reveal_array[i] == 1){
+		var reveal={
+		type: 'threemines-reveal',
+		block_id: function(){return(block_id)},
+		stimuli: [mine_image_prac[0], mine_image_prac[1], mine_image_prac[2] ,outcome_blank],
+		feedback_image: ["img/iron.png","img/copper.png"],
+		choices: ["Next"],
+		blocktype: "Observation",
+		agent_image: function(){
+		if(prac_obs_set.word_array[i] == "did"){
+			return(agent_cond.image_reveal_yes)
+		} else {
+			return(agent_cond.image_reveal_no)
+		}
+	},
+		bonus_phase: function(){
+			return("<p class='center-content' style='color:gray'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + " [you are currently in an observation phase with no bonus]</p>")
+		},
+		timeline: [{latent_intervention: prac_obs_set.latent_array1[i], prompt: "The security camera recorded what happened! The " + agent_cond.condition + " <b>" + prac_obs_set.word_array[i] + "</b> intervene to cause this outcome.", agent_image: prac_obs_set.reveal_image_array[i]}]
+	};
+	timeline.push(reveal)
+	}
+
+};
+
+
+
+
+
+
+//////////////////////////////////////////////////// practice trials part 2 ////////////////////////////////////////////////////
+
+
+if(task_cond == "Prediction"){
+	var pred_instructions_final = {
+				type: 'instructions',
+				pages: function(){
+					return([
+						"<p class='center-content'> Now, it's time for the <b>PREDICTION PHASE</b>. Don't forget that the " +  agent_cond.condition + " <b>does not</b> interfere during the prediction phase. Remember, you will earn 5 cents of <b>real bonus money</b> each time you make a <b>CORRECT PREDICTION</b>.</p>"
+				])},
+				show_clickable_nav: true
+			};
+			timeline.push(pred_instructions_final)
+
+	for (var j = 0; j < n_practice_trials_2; j++){ // loop through the second set of practice trials
+
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine_image_prac[0].unsel,mine_image_prac[1].unsel,mine_image_prac[2].unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+		var initial_choice={
+			type: 'threemines-pred',
+			block_id: function(){return(block_id)},
+			choices: function(){
+				if(counterbalance_order == "CopperFirst"){
+					return(['<img src = "img/copper.png" height=150px>', '<img src = "img/iron.png" height=150px>'])
+				} else if(counterbalance_order == "IronFirst"){
+					return(['<img src = "img/iron.png" height=150px>', '<img src = "img/copper.png" height=150px>'])
+				}
+			},
+			prompt: function(){
+				if(counterbalance_order == "CopperFirst"){
+					return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get copper or iron?</b><BR>")
+				} else if(counterbalance_order == "IronFirst"){
+					return("<p class='center-content'><b>Here's where your miners choose to dig. Do you think you'll get iron or copper?</b><BR>")
+				}
+			},
+			stimuli: [mine_image_prac[0], mine_image_prac[1], mine_image_prac[2]],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			timeline: [
+				{choice_seq: prac_choices_2[j]}
+			],
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					}
+		};
+
+		var trial_outcome={
+			type: 'threemines-pred-feedback',
+			block_id: function(){return(block_id)},
+			weights: [weights_free_a_practice, weights_free_b_practice, weights_free_c_practice],
+			stimuli: [mine_image_prac[0],mine_image_prac[1],mine_image_prac[2],outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			reveals: 0,
+			timeline: [{latent_intervention: latent_array_practice_2[j], prev_choice: prac_choices_2[j]}],
+			bonus_amount: function(){return(bonus_counter)},
+			on_finish: function(data){
+						if(data.pred_correct == "correct"){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+		};
+		timeline.push(ready_dig);
+		timeline.push(initial_choice);
+		timeline.push(trial_outcome);
+
+
+	}
+
+} else if (task_cond == "Choice"){
+
+	var choice_instructions_final = {
+				type: 'instructions',
+				pages: [
+						"<p class='center-content'> Now, it's time for the <b>CHOICE PHASE</b>. Don't forget that the " +  agent_cond.condition + " <b>does not</b> interfere during the choice phase. Remember, you will earn 5 cents of <b>real bonus money</b> each time you mine <b>COPPER</b>.</p>"
+				],
+				show_clickable_nav: true
+			};
+			timeline.push(choice_instructions_final)
+
+	for (var j = 0; j < n_practice_trials_2; j++){ // loop through the second set of practice trials
+
+		var ready_dig={
+			type: 'readydig',
+			block_id: function(){return(block_id)},
+			choices: ['Ready to dig!'],
+			stimuli: [mine_image_prac[0].unsel,mine_image_prac[1].unsel,mine_image_prac[2].unsel],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+		var initial_choice={
+			type: 'three-initial-choice-free',
+			block_id: function(){return(block_id)},
+			choices: ['Dig Here','Dig Here', 'Dig Here'], // choice between two mines
+			prompt: "<p class='center-content'><b>Choose a mine</b><BR>",
+			stimuli: [mine_image_prac[0],mine_image_prac[1], mine_image_prac[2]],
+			timing_post_trial: 0,
+			screen_color: function(){
+				document.documentElement.style.background = "White";
+			},
+			bonus_phase: function(){
+						return("<p class='center-content' style='color:black'><strong>BONUS:</strong> $" + bonus_counter.toFixed(2) + "</p>")
+					},
+			button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+		};
+
+
+		var choice_outcome={
+			type: 'threemines-choice-feedback',
+			block_id: function(){return(block_id)},
+			weights: [weights_free_a_practice, weights_free_b_practice, weights_free_c_practice],
+			stimuli: [mine_image_prac[0],mine_image_prac[1], mine_image_prac[2], outcome_blank],
+			feedback_image: ["img/iron.png","img/copper.png"],
+			choices: ["Next"],
+			reveals: 0,
+			timeline: [{latent_intervention: latent_array_practice_2[j]}],
+			bonus_amount: function(){return(bonus_counter)},
+			on_finish: function(data){
+						if(data.gamble_feedback == 1){
+							bonus_counter = bonus_counter + 0.05
+						}
+					}
+		};
+
+		timeline.push(ready_dig);
+		timeline.push(initial_choice);
+		timeline.push(choice_outcome);
+
+
+
+	}
+}
+
+
+
+
+  var instructions_block_choice_3 = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'>Good job! Now you'll complete the <b>OBSERVATION PHASE</b> and the <b>CHOICE PHASE</b> at several new mining sites with different mines. Here are the mines at the first new site. </p>" + 
+		"<p class='center-content'><img src="+ mine_image[0].unsel + " width='25%'></img><img src="+ mine_image[1].unsel + " width='25%'></img><img src="+ mine_image[2].unsel + " width='25%'></img>", "<br>" + 
+		"<p class='center-content'> At each new site, you'll complete two tasks. First, in the <b>OBSERVATION PHASE</b>, you'll have 15 turns to watch your miners dig in the three mines <em>without</em> earning bonus money. Use this time to familiarize yourself with the mines so you can earn the most money when you choose between the mines in the next phase.</p>" + 
+		"<p class='center-content'> Second, in the <b>CHOICE PHASE</b>, you'll have 6 turns to decide where to dig in order to win bonus money (by getting as much copper as possible).</p>", "<br>" + 
+		"<p class='center-content'> During the observation phase, after you get your copper or iron, you will be asked to indicate how curious you are about whether the outcome you received was caused by the " + agent_cond.condition + "'s influence.</p>"+
+		"<p class='center-content'> You will use a slider like the one below to rate your curiosity about whether the " + agent_cond.condition + " was responsible for the outcome you received.</p>"+
+		"<p class='center-content'><img src=" + agent_cond.slider + " style='width:800px'></img>", "<br>" + 
+		"<p class='center-content'> Next you'll answer some comprehension questions. Once you click 'Next' you CANNOT come back to the instructions.</p>"+
+		"<p class='center-content'> If you want to review the instructions, you should do so now. You can't move on until you get the comprehension questions correct.</p>"
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+var instructions_block_pred_3 = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'>Good job! Now you'll complete the <b>OBSERVATION PHASE</b> and the <b>PREDICTION PHASE</b> at several new mining sites with different mines. Here are the mines at the first new site. </p>" + 
+		"<p class='center-content'><img src="+ mine_image[0].unsel + " width='25%'></img><img src="+ mine_image[1].unsel + " width='25%'></img><img src="+ mine_image[2].unsel + " width='25%'></img>", "<br>" + 
+		"<p class='center-content'> At each new site, you'll complete two tasks. First, in the <b>OBSERVATION PHASE</b>, you'll have 15 turns to watch your miners dig in the three mines <em>without</em> earning bonus money. Use this time to familiarize yourself with the mines so you can earn the most money when you make predictions in the next phase.</p>" + 
+		"<p class='center-content'> Second, in the <b>PREDICTION PHASE</b>, you'll have 6 turns to make predictions about the three mines in order to win bonus money (by predicting whether the miners will find copper or iron as accurately as possible).</p>", "<br>" + 
+		"<p class='center-content'> During the observation phase, after you get your copper or iron, you will be asked to indicate how curious you are about whether the outcome you received was caused by the " + agent_cond.condition + "'s influence.</p>"+
+		"<p class='center-content'> You will use a slider like the one below to rate your curiosity about whether the " + agent_cond.condition + " was responsible for the outcome you received.</p>"+
+		"<p class='center-content'><img src=" + agent_cond.slider + " style='width:800px'></img>", "<br>" + 
+		"<p class='center-content'> Next you'll answer some comprehension questions. Once you click 'Next' you CANNOT come back to the instructions.</p>"+
+		"<p class='center-content'> If you want to review the instructions, you should do so now. You can't move on until you get the comprehension questions correct.</p>"
+	])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+if(task_cond == "Choice"){
+	timeline.push(instructions_block_choice_3)
+  } else if(task_cond == "Prediction") {
+	timeline.push(instructions_block_pred_3)
+  }
+
+
+
+/*define prac1 question*/
+
+var prac1a = {
+	type: "button-response-ehp",
+	prompt: function(){
+		return("<p class='center-content'> During the <b>observation phase</b>, how often does the " + agent_cond.condition + " visit the mines?</p>")}
+		,
+	choices: ['0% of the time', '30% of the time', '50% of the time'],
+	timing_post_trial: 1000,
+	stimulus: agent_cond["image"],
+	screen_color: function(){
+		document.documentElement.style.background = "White";
+	},
+	key_correct:1,
+	button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+};
+
+timeline.push(prac1a)
+
+
+var prac1b_choice = {
+	type: "button-response-ehp",
+	prompt: function(){
+		return("<p class='center-content'> During the <b>choice phase</b>, how often does the " + agent_cond.condition + " visit the mines?</p>")}
+		,
+	choices: ['0% of the time', '30% of the time', '50% of the time'],
+	timing_post_trial: 1000,
+	stimulus: agent_cond["image"],
+	screen_color: function(){
+		document.documentElement.style.background = "White";
+	},
+	key_correct:0,
+	button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+};
+
+var prac1b_pred = {
+	type: "button-response-ehp",
+	prompt: function(){
+		return("<p class='center-content'> During the <b>prediction phase</b>, how often does the " + agent_cond.condition + " visit the mines?</p>")}
+		,
+	choices: ['0% of the time', '30% of the time', '50% of the time'],
+	timing_post_trial: 1000,
+	stimulus: agent_cond["image"],
+	screen_color: function(){
+		document.documentElement.style.background = "White";
+	},
+	key_correct:0,
+	button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+};
+
+
+if(task_cond == "Choice"){
+	timeline.push(prac1b_choice)
+  } else if(task_cond == "Prediction") {
+	timeline.push(prac1b_pred)
+  }
+
+
+
+/*define prac2 question*/
+
+var prac2 = {
+	type: "button-response-ehp",
+	prompt: "<p class='center-content'>What does it mean when you see a mine with a different color?</p>",
+	choices: ["It has the same probability of giving <br>me copper as the other mines", "It has a different probability<br> of giving me copper", "It doesn't mean anything"],
+	timing_post_trial: 1000,
+	stimulus: 'img/pink1_mine.png',
+	key_correct: 1,
+	button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+};
+
+timeline.push(prac2)
+
+
+/*define prac3 question*/
+
+var prac3 = {
+	type: "button-response-ehp",
+	prompt: "<p class='center-content'>After you learn about the mines in the observation phase, what is your main task?</p>",
+	choices: ["Deciding where to dig", "Identifying when the " + agent_cond.condition + " visits", "Predicting outcomes from the mines"],
+	timing_post_trial: 1000,
+	stimulus: 'img/outcome_blank.png',
+	key_correct: function(){
+		if (task_cond == "Choice") {
+			return(0)
+		} else {
+			return(2)
+		}
+	},
+	button_html: '<button class="jspsych-btn" style="width:300px; height:60px;">%choice%</button>'
+	};
+
+timeline.push(prac3)
+
+
+
+
+
+/* define instructions block */
+var instructions_block2 = {
+	type: 'instructions',
+	pages: [
+			"<p class='center-content'> Good job! You're ready to go to the next mining site.</p>"+
+			"<p class='center-content'> We appreciate you taking the time to complete the task to the best of your ability.</p>"+
+			"<p class='center-content'> When you are ready to start, you can click 'Next.'</p>"
+	],
+	show_clickable_nav: true
+};
+
+timeline.push(instructions_block2)
+
+
+///////////////////////////////// reset timeline REMOVE THIS TO INCLUDE INSTRUCTIONS ///////////////////////////////////////////////
+// var timeline = []
+
+
+/// Make Observation trials - FORCED
+
+// {set: set, weights_free_a: weights_free_a, weights_free_b: weights_free_b, weights_free_c: weights_free_c, n_trials_forced: n_trials_forced, 
+// n_trials_free: n_trials_free, forced_choices: choices, latent_array1: latent_array1, reveal_array: reveal_array, word_array: word_array}
+
+
+
+
+var forced1 = make_observation_forced1(set_array_1, mine_image[0], mine_image[1], mine_image[2])
+var free1 = make_observation_forced2(set_array_1, mine_image[0], mine_image[1], mine_image[2])
+var test1 = make_test(test_array_1, mine_image[0], mine_image[1], mine_image[2])
+
+
+timeline = timeline.concat(forced1, free1, test1);
+
+
+
+var inbetween_pred = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'>Good job! Now you'll complete the observation phase and the prediction phase again at a new mining site with different mines. Here are the mines at the new site. Click 'Next' to begin the observation phase. </p>" + 
+		"<p class='center-content'><img src="+ mine_image[3].unsel + " width='25%'></img><img src="+ mine_image[4].unsel + " width='25%'></img><img src="+ mine_image[5].unsel + " width='25%'></img>"
+			])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+var inbetween_choice = {
+	type: 'instructions',
+	pages: function(){ return([
+		"<br> <p class='center-content'>Good job! Now you'll complete the observation phase and the choice phase again at a new mining site with different mines. Here are the mines at the new site. Click 'Next' to begin the observation phase. </p>" + 
+		"<p class='center-content'><img src="+ mine_image[3].unsel + " width='25%'></img><img src="+ mine_image[4].unsel + " width='25%'></img><img src="+ mine_image[5].unsel + " width='25%'></img>"
+			])},
+	show_clickable_nav: true,
+	screen_color: function(){
+		document.documentElement.style.backgroundImage = "url('img/instructions_patternonly_bg.jpg')";
+		document.documentElement.style.backgroundSize = "cover";
+		document.documentElement.style.backgroundRepeat = "no-repeat";
+	}
+};
+
+if(task_cond == "Prediction"){
+	timeline.push(inbetween_pred);
+} else{
+	timeline.push(inbetween_choice);
+}
+
+
+
+var forced2 = make_observation_forced1(set_array_2, mine_image[3], mine_image[4], mine_image[5])
+var free2 = make_observation_forced2(set_array_2, mine_image[3], mine_image[4], mine_image[5])
+var test2 = make_test(test_array_2, mine_image[3], mine_image[4], mine_image[5])
+
+timeline = timeline.concat(forced2, free2, test2);
+
+
+
+
+
+var ending = [];
+
+
+  var bonus_block = {
+  type: "html-button-response",
+  stimulus: function() {
+	  	jsPsych.data.addProperties({total_score: bonus_counter});
+			return("<p class='center-content'> Great job! You're almost done with this experiment. You will be paid <strong>$" +bonus_counter.toFixed(2)+ "</strong> as a bonus payment.</p>"+
+			"<p class='center-content'> Please press 'Continue' to proceed to the remainder of the experiment. </p>");
+        },
+    choices: ['Continue']
+  };
+
+  ending.push(bonus_block);
+
+
+var worker_id_input = {
+	type: "survey-text",
+	questions: [
+		{prompt: "Please input your Prolific ID so that we can pay you the appropriate bonus. Your ID will not be shared with anyone outside of our research team.", name: "prolificID"}]
+}
+ending.push(worker_id_input);
+
+var attnq_1 = {
+    type: "survey-multi-choice",
+    questions: [
+    {prompt: "Who controlled 30% of the outcomes during observation phases?", name: 'agent', options: ["A copper bandit", "A copper tycoon", "A sheriff", "None of the above"]}
+  ]
+}
+ending.push(attnq_1);
+
+var attnq_2 = {
+    type: "survey-multi-choice",
+	questions: [
+    {prompt: "Which of the following did you NEVER receive from the mines?", name: 'outcomes', options: ["Copper", "Gold", "Iron"]}, 
+  ]
+}
+ending.push(attnq_2);
+
+
+var demographics2 = {
+    type: "survey-multi-choice",
+	questions: [
+    {prompt: "What is your gender?", name: 'gender', options: ["Man", "Woman", "Non-binary", "Other", "Prefer not to specify"]}, 
+  ]	
+}
+ending.push(demographics2);
+
+var demographics = {
+    type: "survey-text",
+    questions: [{prompt:"What is your age (in years)?", name: "age"}]
+}
+ending.push(demographics);
+
+
+
+
+// var pavlovia_finish = {
+// 	type: "pavlovia",
+// 	command: "finish"
+// 	};
+
+
+// //FINAL SCREEN
+// var final_screen = {
+// 	type: 'html-button-response',
+// 	stimulus: "<p>Thank you for your responses.</p>",
+// 	choices: ["Submit Experiment"]
+// }
+
+var final_screen = {
+	type:'external-html',
+	url: "end_redirect.html"
+};
+
+
+//PUSH EVERYTHING TO THE TIMELINE
+/*
+*/
+// var experiment = timeline.concat(ending, pavlovia_finish, final_screen) /// with pavlovia
+
+var experiment = timeline.concat(ending, final_screen) //without pavlovia
+
+   
+//INITIALIZE JSPSYCH
+jsPsych.init({
+  timeline: experiment,
+  preload_images: all_images,
+  exclusions: {
+      min_width: 1200,
+      min_height: 650
+    }
+  });
+
+
+	</script>
+	</html>
