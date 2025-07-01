@@ -1,10 +1,12 @@
 library(tidyverse)
 library(car)
 library(lme4)
+library(jtools)
+library(ggeffects)
 
 ####### load STUDY 3 KID DATA #####
 
-Data3kids <- read_csv("../data/study3_kids.csv")
+Data3kids <- read_csv("../model_results/study3_kids.csv")
 
 ##### remove excluded participants
 
@@ -17,18 +19,6 @@ to_exclude <- Data3kids %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data3kids <- Data3kids %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_s3kids <- read.csv("../model_results/CMC2BW_Kid-Final_Clean_Output.csv")
-
-
-colnames(model_s3kids)
-
-selected <- c("oid", "trial_num", "Mean_theta",
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta")
-
-Data3kids <- merge(Data3kids, model_s3kids[selected], by = c("oid", "trial_num"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -46,7 +36,7 @@ Data3kids <- Data3kids %>%
 
 ####### load STUDY 3 ADULT DATA #####
 
-Data3adults <- read_csv("../data/study3_adults.csv")
+Data3adults <- read_csv("../model_results/study3_adults.csv")
 
 ##### remove excluded participants
 
@@ -59,19 +49,6 @@ to_exclude <- Data3adults %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data3adults <- Data3adults %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_s3adults <- read.csv("../model_results/CMC2BW_Adult-Final_Clean_Output.csv")
-
-
-colnames(model_s3adults)
-
-selected <- c("oid", "trial_num", "Mean_theta",
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta")
-
-Data3adults <- merge(Data3adults, model_s3adults[selected], by = c("oid", "trial_num"))
-
 
 # surprise = unsigned reward prediction error (absolute value)
 Data3adults$RPE_MAP_abs <- abs(Data3adults$RPE_MAP)
@@ -154,6 +131,11 @@ round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 
 
+## predicted effect at different ages
+library(emmeans)
+emtrends(m1b, ~ 1, var = "Entropy_z")
+
+
 
 ##### within kids
 
@@ -180,6 +162,22 @@ library(emmeans)
 emtrends(m2, ~ AgeMonth, var = "Entropy_z_s",
          at = list(AgeMonth = c(60, 108)))
 
+
+# generate figure 4
+p_panel4 <- plot_summs(m1a, m1b, model.names = c("Children", "Adults"), legend.title = "Age Group", 
+                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+                                 "Global Uncertainty" = "scale(Entropy_theta)", 
+                                 "Global\nLearning Potential" = "scale(EIG_theta)",
+                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
+                       colors = c("#e5d200", "#999999"),
+                       point.size = 4) + 
+  theme_classic(base_size = 10) + 
+  theme(legend.position = "right") + 
+  ylab("Model-Estimated Trigger") + 
+  xlab("Standardized Coefficient")+ 
+  coord_cartesian(xlim = c(-0.6, 0.9)) + 
+  ggtitle("Study 3") 
+p_panel4
 
 ##### SI: alternative explanations ######
 
@@ -220,14 +218,31 @@ drop1(m3, test = "Chisq")
 
 
 
-#interaction with age (years)
+#interaction with age (months within kids)
 m4 <- glm(animal_choice ~ ed_curiosity_diff*AgeMonth,
           data = df_k, family = "binomial")
 summary(m4)
-
 drop1(m4, test = "Chisq")
 
+# fig. S1
+preds <- ggpredict(m3, terms = c("ed_curiosity_diff", "AgeGroup"))
+df_full$animal_choice_num <- ifelse(df_full$animal_choice == "echidna", 1, 0)
 
+fig2 <- ggplot() + 
+  geom_line(data = preds, mapping = aes(x = x, y = predicted, color = group)) +
+  geom_ribbon(data = preds, mapping = aes(x = x, ymin = conf.low, ymax = conf.high, fill = group),
+              alpha = 0.2) +
+  geom_jitter(data = df_full, mapping = aes(x = ed_curiosity_diff, 
+                                            y = animal_choice_num, 
+                                            color = AgeGroup),
+              height = 0.05, width = 0.2, alpha = 0.5) +
+  theme_classic(base_size = 10) + 
+  xlab("Curiosity Difference Between Q1 and Q2") +
+  ylab("P(Choosing To Learn about Q1)") +
+  scale_color_manual(values = c("#e5d200", "#999999")) + 
+  scale_fill_manual(values = c("#e5d200", "#999999"))
+
+fig2
 
 ######## 1. Control for differences in learning ####
 
@@ -263,9 +278,65 @@ t.test(means$Av_abs_guess_error)
 # difference between ages -- SIG DIFFERENCE
 t.test(Av_abs_guess_error ~ AgeGroup, data = means, var.equal = TRUE)
 
+#### fig S2 (top)
+library(ggbeeswarm)
+means$AgeGroup <- factor(means$AgeGroup, levels = c("Children", "Adults"))
+p1 <- ggplot(means, aes(x = AgeGroup, y = Av_guess_error, color = AgeGroup)) + 
+  geom_hline(yintercept = 0) + 
+  stat_summary(fun.data = "mean_cl_boot")+
+  geom_quasirandom(alpha = 0.3) + 
+  theme_classic(base_size = 10)+ 
+  scale_color_manual(values = c("#e5d200", "#999999")) +
+  xlab("Age Group") + ylab("Learning Error") + theme(legend.position = "none")
+p1  
+
+p2 <- ggplot(means, aes(x = AgeGroup, y = Av_abs_guess_error, color = AgeGroup)) + 
+  geom_hline(yintercept = 0) + 
+  stat_summary(fun.data = "mean_cl_boot")+
+  geom_quasirandom(alpha = 0.3) + 
+  theme_classic(base_size = 10) +
+  scale_color_manual(values = c("#e5d200", "#999999")) +
+  xlab("Age Group") + ylab("Learning Noise") + theme(legend.position = "none")
+p2 
+
+
+#### footnote: deviation from naive estimate
+Data3 <- Data3 %>% group_by(oid) %>%
+  mutate(Naive_theta = cumsum(as.numeric(as.character(feedback)))/(trial_num))
+Data3$Naive_error <- Data3$Theta_guess - Data3$Naive_theta
+
+means2 <- Data3 %>% group_by(oid, AgeGroup) %>%
+  summarize(Av_naive_error = mean(Naive_error, na.rm = TRUE))
+means2
+
+t.test(means2$Av_naive_error)
+# on average, people make guesses higher than just empirical probability (take intervention into account)
+
+
+# difference between ages -- NO DIFFERENCE
+t.test(Av_naive_error ~ AgeGroup, data = means2, var.equal = TRUE)
+
+
+##### footnote: does model estimate predict guesses?
+ 
+mguess <- lmer(Theta_guess ~ Mean_theta*AgeGroup + (Mean_theta||oid), data = Data3)
+summary(mguess)
+drop1(mguess, test = "Chisq")
+Confint(mguess)
+
+
+mguessa <- lmer(Theta_guess ~ Mean_theta + (Mean_theta||oid), data = Data3kids)
+summary(mguessa)
+drop1(mguessa, test = "Chisq")
+Confint(mguessa)
+
+mguessb <- lmer(Theta_guess ~ Mean_theta + (Mean_theta||oid), data = Data3adults)
+summary(mguessb)
+drop1(mguessb, test = "Chisq")
+Confint(mguessb)
+
 
 ##### control for learning noise in analysis of triggers
-
 
 m <- lmer(scale(Curiosity) ~ 
             (scale(RPE_MAP_abs) + 
@@ -284,18 +355,7 @@ m <- lmer(scale(Curiosity) ~
 summary(m)
 drop1(m, test = "Chisq")
 
-sjPlot::plot_model(m, terms = c("RPE_MAP_abs", "AgeGroup", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("Entropy_theta", "AgeGroup", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("EIG_theta", "AgeGroup", "Av_abs_guess_error"), type = "pred")
-
-
-sjPlot::plot_model(m, terms = c("RPE_MAP_abs", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("Entropy_theta", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("Entropy_z", "Av_abs_guess_error"), type = "pred")
-sjPlot::plot_model(m, terms = c("EIG_theta", "Av_abs_guess_error"), type = "pred")
-
-
+#### figure S2, bottom
 sjPlot::plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"), 
                    type = "pred") + 
   theme_classic(base_size = 10) + 

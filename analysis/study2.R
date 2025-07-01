@@ -1,6 +1,7 @@
 library(tidyverse)
 library(car)
 library(lme4)
+library(jtools)
 
 ###### LOAD STUDY 2A DATA #####
 
@@ -183,6 +184,24 @@ summary(m1c)
 round(Confint(m1c), 2)
 drop1(m1c, test = "Chisq")
 
+##### make Fig. 3 part 2
+
+p_panel2 <- plot_summs(m1b, m1a, model.names = c("Mine (Global)", "Outcome (Local)"), legend.title = "Target of Curiosity", 
+                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+                                 "Global Uncertainty" = "scale(Entropy_theta)", 
+                                 "Global\nLearning Potential" = "scale(EIG_theta)",
+                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
+                       colors = c("#17d898", "#ff0083"),
+                       point.size = 4)+ 
+  theme_classic(base_size = 8) + 
+  theme(legend.position = "right") + 
+  ylab("") + 
+  xlab("") + 
+  coord_cartesian(xlim = c(-0.6, 0.9)) + 
+  ggtitle("Study 2a")
+
+p_panel2
+
 
 ######### study 2b #######
 
@@ -233,5 +252,21 @@ m2a <- lmer(scale(rating) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
 summary(m2a)
 round(Confint(m2a), 2)
 drop1(m2a, test = "Chisq")
+
+##### make Fig. 3 part 3
+p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "Global Learning\nPotential"), legend.title = "Rating", 
+                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+                                 "Global Uncertainty" = "scale(Entropy_theta)", 
+                                 "Global\nLearning Potential" = "scale(EIG_theta)",
+                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
+                       colors = c("#ff0083", "#0015ff"),
+                       point.size = 4)+ 
+  theme_classic(base_size = 8) + 
+  theme(legend.position = "right") + 
+  ylab("") + 
+  xlab("Standardized Coefficient") + 
+  coord_cartesian(xlim = c(-0.6, 0.9)) + 
+  ggtitle("Study 2b")
+p_panel3
 
 

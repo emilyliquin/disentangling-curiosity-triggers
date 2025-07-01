@@ -4,8 +4,7 @@ library(lme4)
 
 ####### load STUDY 3 KID DATA #####
 
-Datas2kids <- read_csv("../data/studySI2_kids.csv")
-
+Datas2kids <- read_csv("../../model_results/StudySI2_kids.csv")
 
 
 ##### remove excluded participants
@@ -16,18 +15,6 @@ to_exclude <- Datas2kids %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Datas2kids <- Datas2kids %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_ss2kids <- read.csv("../model_results/CMC_KidData_Output.csv")
-
-
-colnames(model_ss2kids)
-
-selected <- c("oid", "trial_num", "Mean_theta",
-              "RPE_MAP", "RPE_mean", "Entropy_z", "Entropy_theta", "EIG_theta")
-
-Datas2kids <- merge(Datas2kids, model_ss2kids[selected], by = c("oid", "trial_num"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -46,7 +33,7 @@ Datas2kids <- Datas2kids %>%
 
 ####### load STUDY 3 ADULT DATA #####
 
-Datas2adults <- read_csv("../data/studySI2_adults.csv")
+Datas2adults <- read_csv("../../model_results/StudySI2_adults.csv")
 
 ##### remove excluded participants
 
@@ -60,18 +47,6 @@ to_exclude <- Datas2adults %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Datas2adults <- Datas2adults %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_ss2adults <- read.csv("../model_results/CMC_AdultData_Output.csv")
-
-
-colnames(model_ss2adults)
-
-selected <- c("oid", "trial_num", "Mean_theta",
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta")
-
-Datas2adults <- merge(Datas2adults, model_ss2adults[selected], by = c("oid", "trial_num"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -161,7 +136,8 @@ p2 <- plot_summs(m1a, m1b,
                                                        "Global Uncertainty" = "scale(Entropy_theta)",
                                                        "Global\nLearning Potential" = "scale(EIG_theta)",
                                                        "Local\nLearning Potential" = "scale(Entropy_z)"
-                 ))+ 
+                 ),
+                 colors = c("#e5d200", "#999999"))+ 
   theme_classic(base_size = 12) + ylab("Model-Estimated Trigger") + 
   xlab("Standardized Coefficient") +
   theme(legend.position = "top")

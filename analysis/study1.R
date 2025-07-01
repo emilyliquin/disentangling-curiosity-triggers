@@ -1,6 +1,7 @@
 library(tidyverse)
 library(car)
 library(lme4)
+library(jtools)
 
 ###### LOAD STUDY 1A DATA #####
 
@@ -71,14 +72,15 @@ demographics_s1a <- Data1a %>% group_by(oid) %>%
             condition = Condition[1])
 
 summary(demographics_s1a$age)
-summary(demographics_s1a$gender)
+table(demographics_s1a$gender)
 summary(demographics_s1a$condition)
 
 
 
 ####### load STUDY 1B DATA #####
 
-Data1b <- read_csv("../data/study1b.csv")
+##### with model estimates
+Data1b <- read.csv("../model_results/study1b.csv")
 
 ##### remove excluded participants
 
@@ -91,23 +93,6 @@ to_exclude <- Data1b %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data1b <- Data1b %>% filter(!(oid %in% to_exclude$oid))
-
-
-# renumber participants starting from 1:n
-# NOTE: THIS IS ONLY NEEDED WHEN MODELING DATA WAS RUN POST-EXCLUSIONS
-Data1b$oid <- as.numeric(as.factor(Data1b$oid))
- 
-##### add model estimates
-model_s1b <- read.csv("../model_results/choice.csv")
-
-unique(model_s1b$oid)
-
-colnames(model_s1b)
-
-selected <- c("oid", "trial_num",  
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta")
-
-Data1b <- merge(Data1b, model_s1b[selected], by = c("oid", "trial_num"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -175,6 +160,25 @@ summary(m2)
 
 round(car::Confint(m2), 2)
 drop1(m2, test = "Chisq")
+
+
+##### make Fig. 3 part 1
+p_panel1 <- plot_summs(m1, m2, 
+                       model.names = c("1a (Yoked Choice)", "1b (Free Choice)"), 
+                       legend.title = "Study", coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+                                                         "Global Uncertainty" = "scale(Entropy_theta)",
+                                                         "Global\nLearning Potential" = "scale(EIG_theta)",
+                                                         "Local\nLearning Potential" = "scale(Entropy_z)"),
+                       colors = c("#49b7fc", "#ff7b00"),
+                       point.size = 4)+ 
+  theme_classic(base_size = 8) + 
+  theme(legend.position = "right") + 
+  ylab("") + 
+  xlab("") + 
+  coord_cartesian(xlim = c(-0.6, 0.9)) + 
+  ggtitle("Study 1")
+p_panel1
+
 
 
 ##### SI: individual regressions ######

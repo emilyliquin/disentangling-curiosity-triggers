@@ -4,7 +4,7 @@ library(lme4)
 
 ####### load STUDY S2 DATA- part 1, fixed choice #####
 
-Data1a <- read_csv("../../data/studySI1_fixedchoice.csv")
+Data1a <- read_csv("../../model_results/StudySI1_fixedchoice.csv")
 
 ##### remove excluded participants
 
@@ -17,20 +17,6 @@ to_exclude <- Data1a %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data1a <- Data1a %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_s1a <- read.csv("../../model_results/CuriosityFeatures_SI_S1a.csv")
-
-
-colnames(model_s1a)
-
-selected <- c("oid", "trial_num", "set",
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta",
-              "VOI_z_choice", "VOI_theta_choice", "VOI_z_prediction", "VOI_theta_prediction",
-              "Difference_50", "Difference_competitor")
-
-Data1a <- merge(Data1a, model_s1a[selected], by = c("oid", "trial_num", "set"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -49,7 +35,7 @@ Data1a <- Data1a %>%
 
 ####### load STUDY S2 DATA- part 2, free choice #####
 
-Data1b <- read_csv("../../data/studySI1_freechoice.csv")
+Data1b <- read_csv("../../model_results/StudySI1_freechoice.csv")
 
 ##### remove excluded participants
 
@@ -62,20 +48,6 @@ to_exclude <- Data1b %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data1b <- Data1b %>% filter(!(oid %in% to_exclude$oid))
-
-
-##### add model estimates
-model_s1b <- read.csv("../../model_results/CuriosityFeatures_SI_S1b.csv")
-
-
-colnames(model_s1b)
-
-selected <- c("oid", "trial_num", "set",
-              "RPE_MAP", "Entropy_z", "Entropy_theta", "EIG_theta",
-              "VOI_z_choice", "VOI_theta_choice", "VOI_z_prediction", "VOI_theta_prediction",
-              "Difference_50", "Difference_competitor")
-
-Data1b <- merge(Data1b, model_s1b[selected], by = c("oid", "trial_num", "set"))
 
 
 # surprise = unsigned reward prediction error (absolute value)
@@ -245,7 +217,18 @@ car::Confint(m3c)
 drop1(m3c, test = "Chisq")
 
 
-psupp <- jtools::plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+psupp1 <- jtools::plot_summs(m3, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+                                                     "Global Uncertainty" = "scale(Entropy_theta)", 
+                                                     "Global\nLearning Potential" = "scale(EIG_theta)",
+                                                     "Local\nLearning Potential" = "scale(Entropy_z)"),
+                             colors = c("#0015ff")) + 
+  theme_classic(base_size = 12) + 
+  ylab("Model-Estimated Trigger") + 
+  xlab("Standardized Coefficient") + 
+  theme(legend.position = "right")
+psupp1
+
+psupp2 <- jtools::plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
                                                      "Global Uncertainty" = "scale(Entropy_theta)", 
                                                      "Global\nLearning Potential" = "scale(EIG_theta)",
                                                      "Local\nLearning Potential" = "scale(Entropy_z)",
@@ -258,18 +241,29 @@ psupp <- jtools::plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP
   theme_classic(base_size = 12) + 
   ylab("Model-Estimated Trigger") + 
   xlab("Standardized Coefficient") + 
-  theme(legend.position = "top")
+  theme(legend.position = "right")
+psupp2
 
-setwd("/Users/emilyliquin/Documents/00_Work/Research/03_ESC_RL/ESC_RL/Figures")
-ggsave("SupplementFig3.pdf", psupp, height = 4, width = 6.5, units = "in")
+library(patchwork)
+
+h_patch <- psupp1 / psupp2 + plot_layout(heights = c(1, 2)) & 
+  ylab(NULL) & theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5))
+# Use the tag label as a y-axis label
+final_plot <- wrap_elements(h_patch) +
+  labs(tag = "Model-Estimated Trigger") +
+  theme(
+    plot.tag = element_text(size = rel(1.1), angle = 90),
+    plot.tag.position = "left"
+  )
+
 
 
 #################################### PART 3: Does instrumental value predict choices? #################################### 
 
 
-DataS1
+
 ## we only want to look at free choice trials
-DataObserveFree <- subset(DataS1, DataS1$forcedfree == "free")
+DataObserveFree <- subset(Data1b, Data1b$forcedfree == "free")
 
 
 ####### 1. For each participant, we will calculate the proportion of trials 
@@ -305,7 +299,7 @@ wilcox_effsize(data.frame(by_part), prop20~task_condition)
 
 
 
-
+### make fig. s3
 by_part$task_condition <- factor(by_part$task_condition, levels = c("Choice", "Prediction"))
 by_part$Condition <- by_part$task_condition
 
@@ -313,7 +307,6 @@ colnames(by_part)[3:5] <- c("80%", "65%", "20%")
 plotdf2 <- by_part %>% pivot_longer(`80%`:`20%`, 
                                     names_to = "mine",
                                     values_to = "prop")
-
 
 anno <- data.frame(x1 = c(1, 1, 1, 2), x2 = c(2, 3, 2, 3), 
                    y1 = c(0.46, 0.49, 0.38, 0.41), y2 = c(0.47, 0.50, 0.39, 0.42), 
@@ -393,23 +386,21 @@ mat <- rbind(c(1, 2))
 
 library(gridExtra)
 fullplot <- grid.arrange(curioisty.S3,choices.S3, layout_matrix = mat)
+fullplot
 
-# setwd("/Users/emilyliquin/Documents/00_Work/Research/03_ESC_RL/ESC_RL/Figures")
-# ggsave("Supplement_Mines_ChoicesCuriosity.pdf", fullplot, height = 3, width = 6.5, units = "in")
+
 
 ###### 3. Multinomial logistic regression 
 
 library(mlogit)
-library("Formula")
+library(Formula)
 
 
-##### add choice predictors from model
-modelchoice_s1b <- read.csv("../../model_results/ActionFeatures_SI_S1b.csv")
+##### get choice predictors from model
 
+colnames(DataObserveFree)
 
-colnames(modelchoice_s1b)
-
-modelchoice_s1b <- modelchoice_s1b %>% mutate(
+DataObserveFree <- DataObserveFree %>% mutate(
   VOI_theta_choice.20 = case_when(mine_prob_win_left == 0.20 ~ VOI_theta_choice_1,
                                   mine_prob_win_center == 0.20 ~ VOI_theta_choice_2,
                                   mine_prob_win_right == 0.20 ~ VOI_theta_choice_3),
@@ -451,12 +442,6 @@ modelchoice_s1b <- modelchoice_s1b %>% mutate(
 
 
 
-selected <- c("oid", "trial_num", "set",
-              "VOI_theta_choice.20", "VOI_theta_choice.65", "VOI_theta_choice.80",
-              "VOI_theta_prediction.20", "VOI_theta_prediction.65", "VOI_theta_prediction.80",
-              "Difference_50.20", "Difference_50.65", "Difference_50.80",
-              "Difference_competitor.20", "Difference_competitor.65", "Difference_competitor.80")
-
 
 colnames(DataObserveFree)
 # get rid of curiosity features just to avoid confusion
@@ -464,9 +449,7 @@ DataObserveFree <- DataObserveFree %>%
   select(-c(RPE_MAP, Entropy_z, Entropy_theta,
             EIG_theta, VOI_z_choice, VOI_theta_choice, VOI_z_prediction,
             VOI_theta_prediction, Difference_50, Difference_competitor, 
-            RPE_MAP_abs, VOI_theta, VOI_z, Heuristic))
-
-DataObserveFree <- merge(DataObserveFree, modelchoice_s1b[selected], by = c("oid", "trial_num", "set"))
+            RPE_MAP_abs))
 
 
 
@@ -487,7 +470,7 @@ df_choice <- dfidx(as.data.frame(DataObserveFree), shape = "wide", varying = whi
                    choice = "chosen_mine_prob",
                    idnames = c("chid", "alt"))
 
-df_choice$task_condition <- relevel(df_choice$task_condition, ref = "Prediction")
+df_choice$task_condition <- factor(df_choice$task_condition, levels = c("Prediction", "Choice"))
 
 #fit model - heuristic features
 m_heur <- mlogit(Formula(chosen_mine_prob ~ 0 + Difference_50 + Difference_competitor + 
@@ -502,8 +485,3 @@ m_val <- mlogit(Formula(chosen_mine_prob ~ 0 + VOI_theta_prediction + VOI_theta_
                           (VOI_theta_prediction + VOI_theta_choice):task_condition), df_choice)
 (s_val <- summary(m_val))
 exp(car::Confint(m_val))
-
-
-
-
-
