@@ -171,13 +171,13 @@ p_panel4 <- plot_summs(m1a, m1b, model.names = c("Children", "Adults"), legend.t
                                  "Local\nLearning Potential" = "scale(Entropy_z)"),
                        colors = c("#e5d200", "#999999"),
                        point.size = 4) + 
-  theme_classic(base_size = 10) + 
+  theme_classic(base_size = 8) + 
   theme(legend.position = "right") + 
   ylab("Model-Estimated Trigger") + 
   xlab("Standardized Coefficient")+ 
-  coord_cartesian(xlim = c(-0.6, 0.9)) + 
-  ggtitle("Study 3") 
+  coord_cartesian(xlim = c(-0.6, 0.9))
 p_panel4
+
 
 ##### SI: alternative explanations ######
 
@@ -362,5 +362,112 @@ sjPlot::plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"),
   scale_color_manual(values = c("#e5d200", "#999999")) +
   scale_fill_manual(values = c("#e5d200", "#999999")) 
 
+
+######### SI ##########
+
+
+##### simple regressions ####
+
+
+# surprise
+regs1_adults <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
+                      (scale(RPE_MAP_abs)||oid) ,
+                    data = Data3adults, 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs1_adults), 2)
+drop1(regs1_adults, test = "Chisq")
+
+regs1_kids <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
+                       (scale(RPE_MAP_abs)||oid) ,
+                     data = Data3kids, 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs1_kids), 2)
+drop1(regs1_kids, test = "Chisq")
+
+regs1a <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs)*AgeGroup + 
+                (scale(RPE_MAP_abs)||oid) ,
+              data = Data3, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs1a, test = "Chisq")
+
+regs1b <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs)*AgeMonth + 
+                (scale(RPE_MAP_abs)||oid) ,
+              data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs1b, test = "Chisq")
+
+
+# global uncertainty
+regs2_adults <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
+                       (scale(Entropy_theta)||oid) ,
+                     data = Data3adults, 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs2_adults), 2)
+drop1(regs2_adults, test = "Chisq")
+
+regs2_kids <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
+                     (scale(Entropy_theta)||oid) ,
+                   data = Data3kids, 
+                   control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs2_kids), 2)
+drop1(regs2_kids, test = "Chisq")
+
+regs2a <- lmer(scale(Curiosity) ~ scale(Entropy_theta)*AgeGroup + 
+                 (scale(Entropy_theta)||oid) ,
+               data = Data3, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs2a, test = "Chisq")
+
+regs2b <- lmer(scale(Curiosity) ~ scale(Entropy_theta)*AgeMonth + 
+                 (scale(Entropy_theta)||oid) ,
+               data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs2b, test = "Chisq")
+
+# local learning potential
+regs3_adults <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
+                       (scale(Entropy_z)||oid) ,
+                     data = Data3adults, 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs3_adults), 2)
+drop1(regs3_adults, test = "Chisq")
+
+regs3_kids <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
+                     (scale(Entropy_z)||oid) ,
+                   data = Data3kids, 
+                   control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs3_kids), 2)
+drop1(regs3_kids, test = "Chisq")
+
+regs3a <- lmer(scale(Curiosity) ~ scale(Entropy_z)*AgeGroup + 
+                 (scale(Entropy_z)||oid) ,
+               data = Data3, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs3a, test = "Chisq")
+
+regs3b <- lmer(scale(Curiosity) ~ scale(Entropy_z)*AgeMonth + 
+                 (scale(Entropy_z)||oid) ,
+               data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs3b, test = "Chisq")
+
+# global learning potential
+regs4_adults <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
+                       (scale(EIG_theta)||oid) ,
+                     data = Data3adults, 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs4_adults), 2)
+drop1(regs4_adults, test = "Chisq")
+
+regs4_kids <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
+                     (scale(EIG_theta)||oid) ,
+                   data = Data3kids, 
+                   control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs4_kids), 2)
+drop1(regs4_kids, test = "Chisq")
+
+regs4a <- lmer(scale(Curiosity) ~ scale(EIG_theta)*AgeGroup + 
+                 (scale(EIG_theta)||oid) ,
+               data = Data3, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs4a, test = "Chisq")
+
+regs4b <- lmer(scale(Curiosity) ~ scale(EIG_theta)*AgeMonth + 
+                 (scale(EIG_theta)||oid) ,
+               data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs4b, test = "Chisq")
 
 

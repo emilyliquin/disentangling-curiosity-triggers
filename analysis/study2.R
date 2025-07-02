@@ -269,4 +269,202 @@ p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "
   ggtitle("Study 2b")
 p_panel3
 
+######### SI ##########
+
+
+##### simple regressions ####
+
+
+##### for Study 2a: individual regressions
+
+# Study 2a
+
+# surprise
+regs1_local <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
+              (scale(RPE_MAP_abs)|oid) ,
+            data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+            control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs1_local), 2)
+drop1(regs1_local, test = "Chisq")
+
+regs1_global <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
+              (scale(RPE_MAP_abs)|oid) ,
+            data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+            control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs1_global), 2)
+drop1(regs1_global, test = "Chisq")
+
+regs1 <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs)*rating_condition + 
+              (scale(RPE_MAP_abs)|oid) ,
+            data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs1, test = "Chisq")
+
+# global uncertainty
+regs2_local <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
+                      (scale(Entropy_theta)|oid) ,
+                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs2_local), 2)
+drop1(regs2_local, test = "Chisq")
+
+regs2_global <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
+                       (scale(Entropy_theta)|oid) ,
+                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs2_global), 2)
+drop1(regs2_global, test = "Chisq")
+
+regs2 <- lmer(scale(curiosity) ~ scale(Entropy_theta)*rating_condition + 
+                (scale(Entropy_theta)|oid) ,
+              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs2, test = "Chisq")
+
+# local learning potential
+regs3_local <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
+                      (scale(Entropy_z)|oid) ,
+                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs3_local), 2)
+drop1(regs3_local, test = "Chisq")
+
+regs3_global <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
+                       (scale(Entropy_z)|oid) ,
+                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs3_global), 2)
+drop1(regs3_global, test = "Chisq")
+
+regs3 <- lmer(scale(curiosity) ~ scale(Entropy_z)*rating_condition + 
+                (scale(Entropy_z)|oid) ,
+              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs3, test = "Chisq")
+
+# global learning potential
+regs4_local <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
+                      (scale(EIG_theta)|oid) ,
+                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs4_local), 2)
+drop1(regs4_local, test = "Chisq")
+
+regs4_global <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
+                       (scale(EIG_theta)|oid) ,
+                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+                     control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs4_global), 2)
+drop1(regs4_global, test = "Chisq")
+
+regs4 <- lmer(scale(curiosity) ~ scale(EIG_theta)*rating_condition + 
+                (scale(EIG_theta)|oid) ,
+              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs4, test = "Chisq")
+
+
+##### for Study 2b: individual regressions
+
+# surprise
+regs1_learn <- lmer(scale(rating) ~ scale(RPE_MAP_abs) + 
+                      (scale(RPE_MAP_abs)|oid) ,
+                    data = DataFull %>% filter(rating_condition == "GlobalLearn"), 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs1_learn), 2)
+drop1(regs1_learn, test = "Chisq")
+
+regs1 <- lmer(scale(rating) ~ scale(RPE_MAP_abs)*rating_condition + 
+                (scale(RPE_MAP_abs)|oid) ,
+              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs1, test = "Chisq")
+
+# global uncertainty
+regs2_learn <- lmer(scale(rating) ~ scale(Entropy_theta) + 
+                      (scale(Entropy_theta)|oid) ,
+                    data = DataFull %>% filter(rating_condition == "GlobalLearn"), 
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs2_learn), 2)
+drop1(regs2_learn, test = "Chisq")
+
+regs2 <- lmer(scale(rating) ~ scale(Entropy_theta)*rating_condition + 
+                (scale(Entropy_theta)|oid) ,
+              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs2, test = "Chisq")
+
+# local learning potential
+regs3_learn <- lmer(scale(rating) ~ scale(Entropy_z) + 
+                      (scale(Entropy_z)|oid) ,
+                    data = DataFull %>% filter(rating_condition == "GlobalLearn"),
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs3_learn), 2)
+drop1(regs3_learn, test = "Chisq")
+
+regs3 <- lmer(scale(rating) ~ scale(Entropy_z)*rating_condition + 
+                (scale(Entropy_z)|oid) ,
+              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs3, test = "Chisq")
+
+# global learning potential
+regs4_learn <- lmer(scale(rating) ~ scale(EIG_theta) + 
+                      (scale(EIG_theta)|oid) ,
+                    data = DataFull %>% filter(rating_condition == "GlobalLearn"),
+                    control = lmerControl(optimizer = "bobyqa"))
+round(car::Confint(regs4_learn), 2)
+drop1(regs4_learn, test = "Chisq")
+
+regs4 <- lmer(scale(rating) ~ scale(EIG_theta)*rating_condition + 
+                (scale(EIG_theta)|oid) ,
+              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+drop1(regs4, test = "Chisq")
+
+
+##### rated global learning and curiosity ####
+
+
+# get mean global EIG rating per trial/participant
+Data2b_by_trial <- Data2b %>% group_by(yoked_participant, trial_num) %>%
+  summarize(m_eig_rating = mean(rating))
+
+# merge with curiosity data
+Data2a_local_ratings <- merge(Data2a_local, Data2b_by_trial, 
+                              by = c("yoked_participant", "trial_num"), all.x = TRUE)
+
+# filter out trials where there's no matching rating
+Data2a_local_ratings <- Data2a_local_ratings %>% filter(!is.na(Data2a_local_ratings$m_eig_rating))
+
+# predict curiosity with ratings
+m1a <- lmer(scale(rating) ~ scale(m_eig_rating) + 
+              (scale(m_eig_rating)|oid),
+            data = Data2a_local_ratings, 
+            control = lmerControl(optimizer = "bobyqa"))
+summary(m1a)
+drop1(m1a, test = "Chisq")
+round(Confint(m1a), 2)
+
+# predict above and beyond model features?
+
+# just EIG
+m1 <- lmer(scale(rating) ~ 
+             scale(m_eig_rating) + 
+             scale(EIG_theta) + 
+             (scale(m_eig_rating) + scale(EIG_theta)|oid),
+           data = Data2a_local_ratings, 
+           control = lmerControl(optimizer = "bobyqa"))
+summary(m1)
+drop1(m1, test = "Chisq")
+round(Confint(m1), 2)
+
+
+m1 <- lmer(scale(rating) ~ 
+             scale(m_eig_rating) + 
+             scale(RPE_MAP_abs) + 
+             scale(Entropy_theta) + 
+             scale(Entropy_z) + 
+             scale(EIG_theta) + 
+             (scale(m_eig_rating) + 
+                scale(RPE_MAP_abs) + scale(Entropy_theta) + 
+                scale(Entropy_z) + scale(EIG_theta)|oid),
+           data = Data2a_local_ratings, 
+           control = lmerControl(optimizer = "bobyqa"))
+summary(m1)
+drop1(m1, test = "Chisq")
+round(Confint(m1), 2)
+
 
