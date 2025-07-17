@@ -35,7 +35,8 @@ prob_z(z; ε) = pdf(Bernoulli(ε), z)
     p(r | z, θ, θ_z)
 "
 function prob_r(r; z, θ, θ_z)
-    pdf(Bernoulli(Bool(z) ? θ_z : θ), r)
+    p = Bool(z) ? θ_z : θ
+    pdf(Bernoulli(p), r)
 end
 
 
@@ -59,10 +60,10 @@ EventCounts = keyed_array_type(Int,
 "
 function likelihood(ec::EventCounts, θ, θ_z, ε)
     # base probabilities
-    p00 = prob_rz(0, 0; θ, θ_z, ε)
-    p01 = prob_rz(0, 1; θ, θ_z, ε)
-    p10 = prob_rz(1, 0; θ, θ_z, ε)
-    p11 = prob_rz(1, 1; θ, θ_z, ε)
+    p00 = prob_rz(0, 0; θ, θ_z, ε) # (1-θ) (1-ε)
+    p01 = prob_rz(0, 1; θ, θ_z, ε) # (1-θ_z) ε
+    p10 = prob_rz(1, 0; θ, θ_z, ε) # θ (1-ε)
+    p11 = prob_rz(1, 1; θ, θ_z, ε) # θ_z ε
 
     # observed-vs-missing counts
     n00_obs = ec[false, false]

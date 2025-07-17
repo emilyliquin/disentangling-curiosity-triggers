@@ -32,15 +32,24 @@ function naive_likelihood(data, θ, θ_z, ε)
         end
         legal || return 0.  # i told you it was naive...
         mapreduce(*, eachindex(data)) do i
-            prob_rz(data[i].r_obs, zs[i], θ, θ_z, ε)
+            prob_rz(data[i].r_obs, zs[i]; θ, θ_z, ε)
         end
     end
 end
 
+function prob_rz(r, ::Missing; θ, θ_z, ε)
+    prob_rz(r, 0; θ, θ_z, ε) + prob_rz(r, 1; θ, θ_z, ε)
+end
+
+function naive_likelihood_two(data, θ, θ_z, ε)
+    mapreduce(*, eachindex(data)) do i
+        prob_rz(data[i].r_obs, data[i].z_obs; θ, θ_z, ε)
+    end
+end
 
 @testset failfast=true "Clever likelihood matches naive likelihood" begin
 
-    params = create_test_objects((;θ=(0.,1), θ_z=(0.,1), ε=(0.,1)))
+    params = create_test_objects((;θ=(0.,1), θ_z=(0.,1), ε=(0.,1), p_reveal=(0.,1)); n_rand=2)
     
     for i in 1:length(params)
         @testset let prm = params[i]
@@ -48,6 +57,7 @@ end
             b = make_belief(data, prm)
             for θ in 0:.01:1
                 @test naive_likelihood(data, θ, prm.θ_z, prm.ε) ≈ likelihood(b.event_counts[1], θ, prm.θ_z, prm.ε)
+                @test naive_likelihood_two(data, θ, prm.θ_z, prm.ε) ≈ likelihood(b.event_counts[1], θ, prm.θ_z, prm.ε)
             end
         end
     end
@@ -60,7 +70,7 @@ function fit_beta(rs; prior=(1,1))
     Beta(α, β)
 end
 
-@testset failfast=true "likelihood matches Beta when ε = 0" begin
+@testset failfast=true "posterior is Beta when ε = 0" begin
 
     params = create_test_objects((;θ=(0.,1), θ_z=(0.,1), ε=(0.,)))
     
