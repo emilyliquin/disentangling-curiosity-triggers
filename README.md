@@ -1,4 +1,4 @@
-This repository contains data, modeling, analysis scripts, and methods for "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., in prep).
+This repository contains data, modeling, analysis scripts, and methods for "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., under review).
 
 
 `data`: participant data
