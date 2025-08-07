@@ -147,6 +147,7 @@ summary(m1)
 
 round(Confint(m1), 2)
 drop1(m1, test = "Chisq")
+vif(m1)
 
 
 ######### study 1b #######
@@ -160,6 +161,7 @@ summary(m2)
 
 round(car::Confint(m2), 2)
 drop1(m2, test = "Chisq")
+vif(m2)
 
 
 ##### make Fig. 3 part 1

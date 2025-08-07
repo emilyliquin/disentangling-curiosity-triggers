@@ -151,7 +151,7 @@ summary(m1)
 
 round(Confint(m1), 2)
 drop1(m1, test = "Chisq")
-
+vif(m1)
 
 # follow up - just in LOCAL learning goal condition
 m1a <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
@@ -163,6 +163,7 @@ m1a <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
 summary(m1a)
 round(Confint(m1a), 2)
 drop1(m1a, test = "Chisq")
+vif(m1a)
 
 # follow up - just in GLOBAL learning goal condition
 m1b <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
@@ -174,6 +175,7 @@ m1b <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
 summary(m1b)
 round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
+vif(m1b)
 
 # global - just Entropy_z
 m1c <- lmer(scale(curiosity) ~ (scale(Entropy_z)) + 
@@ -240,7 +242,7 @@ summary(m2)
 
 round(car::Confint(m2), 2)
 drop1(m2, test = "Chisq")
-
+vif(m2)
 
 # follow up - just rating global learning potential
 m2a <- lmer(scale(rating) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
@@ -252,6 +254,7 @@ m2a <- lmer(scale(rating) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
 summary(m2a)
 round(Confint(m2a), 2)
 drop1(m2a, test = "Chisq")
+vif(m2a)
 
 ##### make Fig. 3 part 3
 p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "Global Learning\nPotential"), legend.title = "Rating", 

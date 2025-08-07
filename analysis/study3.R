@@ -104,7 +104,7 @@ summary(m1)
 
 round(Confint(m1), 2)
 drop1(m1, test = "Chisq")
-
+vif(m1)
 
 #### follow-up - within kids 
 
@@ -117,7 +117,7 @@ summary(m1a)
 
 round(Confint(m1a), 2)
 drop1(m1a, test = "Chisq")
-
+vif(m1a)
 
 #### follow-up - within adults
 m1b <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
@@ -129,7 +129,7 @@ summary(m1b)
 
 round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
-
+vif(m1b)
 
 ## predicted effect at different ages
 library(emmeans)
@@ -155,7 +155,6 @@ summary(m2)
 
 round(Confint(m2), 2)
 drop1(m2, test = "Chisq")
-
 
 ## predicted effect at different ages
 library(emmeans)
