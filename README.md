@@ -10,7 +10,7 @@ This repository contains data, modeling, analysis scripts, and methods for "A co
 
 `analysis`: Analysis scripts to produce figures and results
 
-`methods`: Code/Materials for all experiments (see READMEs in individual experiment folders for more information)
+`methods`: Code/Materials for all experiments (see READMEs in individual experiment folders for more information.)
 
 Data & modeling details:
 

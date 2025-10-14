@@ -1,4 +1,4 @@
-Experiment code for Study S1 (fixed choice version), "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., submitted).
+Experiment code for Study S1 (fixed choice version), "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., submitted). Code was adapted from https://osf.io/3htpj/.
 
 To preview the study locally, set up a local HTTP server in this directory. For example, with Python 3:
 

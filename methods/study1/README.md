@@ -1,4 +1,4 @@
-Experiment code for Studies 1a and 1b, "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., submitted).
+Experiment code for Studies 1a and 1b, "A computational approach to disentangling the triggers of curiosity in children and adults" (Liquin et al., submitted). Code was adapted from https://osf.io/3htpj/.
 
 Experiment files are in `public/views`, with `Study1a.html` including the code for Study 1a and `Study1b.html` including the code for Study 1b.
 
