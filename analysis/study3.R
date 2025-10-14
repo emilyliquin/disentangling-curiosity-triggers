@@ -3,6 +3,9 @@ library(car)
 library(lme4)
 library(jtools)
 library(ggeffects)
+library(ggbeeswarm)
+library(emmeans)
+library(sjPlot)
 
 ####### load STUDY 3 KID DATA #####
 
@@ -132,7 +135,6 @@ drop1(m1b, test = "Chisq")
 vif(m1b)
 
 ## predicted effect at different ages
-library(emmeans)
 emtrends(m1b, ~ 1, var = "Entropy_z")
 
 
@@ -157,7 +159,6 @@ round(Confint(m2), 2)
 drop1(m2, test = "Chisq")
 
 ## predicted effect at different ages
-library(emmeans)
 emtrends(m2, ~ AgeMonth, var = "Entropy_z_s",
          at = list(AgeMonth = c(60, 108)))
 
@@ -278,7 +279,6 @@ t.test(means$Av_abs_guess_error)
 t.test(Av_abs_guess_error ~ AgeGroup, data = means, var.equal = TRUE)
 
 #### fig S2 (top)
-library(ggbeeswarm)
 means$AgeGroup <- factor(means$AgeGroup, levels = c("Children", "Adults"))
 p1 <- ggplot(means, aes(x = AgeGroup, y = Av_guess_error, color = AgeGroup)) + 
   geom_hline(yintercept = 0) + 
@@ -355,7 +355,7 @@ summary(m)
 drop1(m, test = "Chisq")
 
 #### figure S2, bottom
-sjPlot::plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"), 
+plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"), 
                    type = "pred") + 
   theme_classic(base_size = 10) + 
   scale_color_manual(values = c("#e5d200", "#999999")) +
@@ -373,14 +373,14 @@ regs1_adults <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) +
                       (scale(RPE_MAP_abs)||oid) ,
                     data = Data3adults, 
                     control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs1_adults), 2)
+round(Confint(regs1_adults), 2)
 drop1(regs1_adults, test = "Chisq")
 
 regs1_kids <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
                        (scale(RPE_MAP_abs)||oid) ,
                      data = Data3kids, 
                      control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs1_kids), 2)
+round(Confint(regs1_kids), 2)
 drop1(regs1_kids, test = "Chisq")
 
 regs1a <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs)*AgeGroup + 
@@ -399,14 +399,14 @@ regs2_adults <- lmer(scale(Curiosity) ~ scale(Entropy_theta) +
                        (scale(Entropy_theta)||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs2_adults), 2)
+round(Confint(regs2_adults), 2)
 drop1(regs2_adults, test = "Chisq")
 
 regs2_kids <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
                      (scale(Entropy_theta)||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs2_kids), 2)
+round(Confint(regs2_kids), 2)
 drop1(regs2_kids, test = "Chisq")
 
 regs2a <- lmer(scale(Curiosity) ~ scale(Entropy_theta)*AgeGroup + 
@@ -424,14 +424,14 @@ regs3_adults <- lmer(scale(Curiosity) ~ scale(Entropy_z) +
                        (scale(Entropy_z)||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs3_adults), 2)
+round(Confint(regs3_adults), 2)
 drop1(regs3_adults, test = "Chisq")
 
 regs3_kids <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
                      (scale(Entropy_z)||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs3_kids), 2)
+round(Confint(regs3_kids), 2)
 drop1(regs3_kids, test = "Chisq")
 
 regs3a <- lmer(scale(Curiosity) ~ scale(Entropy_z)*AgeGroup + 
@@ -449,14 +449,14 @@ regs4_adults <- lmer(scale(Curiosity) ~ scale(EIG_theta) +
                        (scale(EIG_theta)||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs4_adults), 2)
+round(Confint(regs4_adults), 2)
 drop1(regs4_adults, test = "Chisq")
 
 regs4_kids <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
                      (scale(EIG_theta)||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(regs4_kids), 2)
+round(Confint(regs4_kids), 2)
 drop1(regs4_kids, test = "Chisq")
 
 regs4a <- lmer(scale(Curiosity) ~ scale(EIG_theta)*AgeGroup + 

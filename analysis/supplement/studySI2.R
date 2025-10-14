@@ -1,6 +1,8 @@
 library(tidyverse)
 library(car)
 library(lme4)
+library(jtools)
+
 
 ####### load STUDY 3 KID DATA #####
 
@@ -129,7 +131,6 @@ round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 
 
-library(jtools)
 p2 <- plot_summs(m1a, m1b, 
                  model.names = c("Children", "Adults"), 
                  legend.title = "Age Group", coefs = c("Surprise" = "scale(RPE_MAP_abs)",

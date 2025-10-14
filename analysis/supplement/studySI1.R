@@ -1,6 +1,14 @@
 library(tidyverse)
 library(car)
 library(lme4)
+library(patchwork)
+library(rstatix)
+library(mlogit)
+library(Formula)
+library(gridExtra)
+library(jtools)
+library(emmeans)
+
 
 ####### load STUDY S2 DATA- part 1, fixed choice #####
 
@@ -105,7 +113,7 @@ mod1 <- lmer(scale(curiosity) ~ task_condition*chosen_mine_prob + (chosen_mine_p
 summary(mod1)
 drop1(mod1, test = "Chisq")
 
-emmeans::emmeans(mod1, pairwise ~ chosen_mine_prob, pbkrtest.limit = 9150)
+emmeans(mod1, pairwise ~ chosen_mine_prob, pbkrtest.limit = 9150)
 
 
 
@@ -121,7 +129,7 @@ mod_heur <- lmer(scale(curiosity) ~ (scale(Difference_50) + scale(Difference_com
                  data = DataS1, 
                  control = lmerControl(optimizer = "bobyqa"))
 (sum_heur <- summary(mod_heur))
-car::Confint(mod_heur)
+Confint(mod_heur)
 
 drop1(mod_heur, test = "Chisq")
 
@@ -131,7 +139,7 @@ mod_V1 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_z_prediction) + scale(VOI_z_c
                        (scale(VOI_z_prediction) + scale(VOI_z_choice)|oid), 
                      data = DataS1)
 (sum_V1 <- summary(mod_V1))
-car::Confint(mod_V1)
+Confint(mod_V1)
 
 drop1(mod_V1, test = "Chisq")
 
@@ -142,7 +150,7 @@ mod_V2 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_theta_prediction) + scale(VOI
                      data = DataS1,
                      control = lmerControl(optimizer = "bobyqa"))
 (sum_V2 <- summary(mod_V2))
-car::Confint(mod_V2)
+Confint(mod_V2)
 
 drop1(mod_V2, test = "Chisq")
 
@@ -154,21 +162,21 @@ m3 <- lme4::lmer(scale(curiosity) ~ (scale(Heuristic)) +
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
-car::Confint(m3)
+Confint(m3)
 
 m3 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_z)) + 
                    (scale(VOI_z)|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
-car::Confint(m3)
+Confint(m3)
 
 m3 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_theta)) + 
                    (scale(VOI_theta)|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
-car::Confint(m3)
+Confint(m3)
 
 
 #### base model - replicate other studies
@@ -180,7 +188,7 @@ m3 <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
-car::Confint(m3)
+Confint(m3)
 
 ### add each instrumental feature
 
@@ -191,7 +199,7 @@ m3a <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) 
                        scale(Entropy_z) + scale(EIG_theta) + scale(Heuristic)|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3a)
-car::Confint(m3a)
+Confint(m3a)
 drop1(m3a, test = "Chisq")
 
 
@@ -202,7 +210,7 @@ m3b <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) 
                        scale(Entropy_z) + scale(EIG_theta) + scale(VOI_z)|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3b)
-car::Confint(m3b)
+Confint(m3b)
 drop1(m3b, test = "Chisq")
 
 
@@ -213,11 +221,11 @@ m3c <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) 
                        scale(Entropy_z) + scale(EIG_theta) + scale(VOI_theta)|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3c)
-car::Confint(m3c)
+Confint(m3c)
 drop1(m3c, test = "Chisq")
 
 
-psupp1 <- jtools::plot_summs(m3, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+psupp1 <- plot_summs(m3, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
                                                      "Global Uncertainty" = "scale(Entropy_theta)", 
                                                      "Global\nLearning Potential" = "scale(EIG_theta)",
                                                      "Local\nLearning Potential" = "scale(Entropy_z)"),
@@ -228,7 +236,7 @@ psupp1 <- jtools::plot_summs(m3, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
   theme(legend.position = "right")
 psupp1
 
-psupp2 <- jtools::plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
+psupp2 <- plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
                                                      "Global Uncertainty" = "scale(Entropy_theta)", 
                                                      "Global\nLearning Potential" = "scale(EIG_theta)",
                                                      "Local\nLearning Potential" = "scale(Entropy_z)",
@@ -244,7 +252,6 @@ psupp2 <- jtools::plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MA
   theme(legend.position = "right")
 psupp2
 
-library(patchwork)
 
 h_patch <- psupp1 / psupp2 + plot_layout(heights = c(1, 2)) & 
   ylab(NULL) & theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5))
@@ -283,10 +290,6 @@ by_part
 
 
 
-library(coin)
-library(tidyverse)
-library(rstatix)
-library(ggpubr)
 
 wilcox.test(prop80~task_condition, data = by_part) #prediction: difference in means (choice - pred) is greater than zero
 wilcox_effsize(data.frame(by_part), prop80~task_condition)
@@ -384,16 +387,12 @@ curioisty.S3
 
 mat <- rbind(c(1, 2))
 
-library(gridExtra)
 fullplot <- grid.arrange(curioisty.S3,choices.S3, layout_matrix = mat)
 fullplot
 
 
 
 ###### 3. Multinomial logistic regression 
-
-library(mlogit)
-library(Formula)
 
 
 ##### get choice predictors from model
@@ -477,11 +476,12 @@ m_heur <- mlogit(Formula(chosen_mine_prob ~ 0 + Difference_50 + Difference_compe
                            (Difference_50 + Difference_competitor):task_condition), df_choice)
 (s_heur <- summary(m_heur))
 
-round(exp(car::Confint(m_heur)),3)
+round(exp(Confint(m_heur)),3)
 
 
 #fit model - optimal features
 m_val <- mlogit(Formula(chosen_mine_prob ~ 0 + VOI_theta_prediction + VOI_theta_choice + 
                           (VOI_theta_prediction + VOI_theta_choice):task_condition), df_choice)
 (s_val <- summary(m_val))
-exp(car::Confint(m_val))
+exp(Confint(m_val))
+
