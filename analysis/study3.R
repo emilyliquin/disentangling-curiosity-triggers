@@ -6,6 +6,8 @@ library(ggeffects)
 library(ggbeeswarm)
 library(emmeans)
 library(sjPlot)
+library(rstatix)
+
 
 ####### load STUDY 3 KID DATA #####
 
@@ -261,22 +263,27 @@ Data3 <- merge(Data3, means)
 
 
 #### learning error: 
-t.test(means$Av_guess_error)
+(t_result <- t.test(means$Av_guess_error))
+means %>% ungroup() %>% cohens_d(Av_guess_error ~ 1, mu = 0)
 # on average, people make guesses lower than 
 # the true value (aren't taking into account the intervention enough, 
 # thus overestimating the number of yellow berries)
 
 
 # difference between ages -- NO DIFFERENCE
-t.test(Av_guess_error ~ AgeGroup, data = means)
+t_result2 <- t.test(Av_guess_error ~ AgeGroup, data = means)
+means %>% ungroup() %>% cohens_d(Av_guess_error ~ AgeGroup)
+
 
 #### learning noise: 
 t.test(means$Av_abs_guess_error)
 # on average, people are off from the true value
+means %>% ungroup() %>% cohens_d(Av_abs_guess_error ~ 1, mu = 0)
 
 
 # difference between ages -- SIG DIFFERENCE
 t.test(Av_abs_guess_error ~ AgeGroup, data = means, var.equal = TRUE)
+means %>% ungroup() %>% cohens_d(Av_abs_guess_error ~ AgeGroup)
 
 #### fig S2 (top)
 means$AgeGroup <- factor(means$AgeGroup, levels = c("Children", "Adults"))
@@ -310,10 +317,12 @@ means2
 
 t.test(means2$Av_naive_error)
 # on average, people make guesses higher than just empirical probability (take intervention into account)
+means2 %>% ungroup() %>% cohens_d(Av_naive_error ~ 1, mu = 0)
 
 
 # difference between ages -- NO DIFFERENCE
 t.test(Av_naive_error ~ AgeGroup, data = means2, var.equal = TRUE)
+means2 %>% ungroup() %>% cohens_d(Av_naive_error ~ AgeGroup)
 
 
 ##### footnote: does model estimate predict guesses?
@@ -352,6 +361,7 @@ m <- lmer(scale(Curiosity) ~
                scale(EIG_theta)||oid), data = Data3,
           control = lmerControl(optimizer= "bobyqa"))
 summary(m)
+Confint(m)
 drop1(m, test = "Chisq")
 
 #### figure S2, bottom

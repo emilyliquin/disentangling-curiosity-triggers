@@ -115,7 +115,7 @@ m1a <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
             data = Datas2kids, control = lmerControl(optimizer = "bobyqa"))
 summary(m1a)
 
-round(Confint(m1a), 2)
+round(Confint(m1a), 3)
 drop1(m1a, test = "Chisq")
 
 
@@ -183,5 +183,5 @@ drop1(m2b, test = "Chisq")
 m2 <- lmer(Estimate ~ Machine*AgeGroup + (1|oid), data = Estimates)
 summary(m2)
 drop1(m2, test = "Chisq")
-
+Confint(m2)
 
