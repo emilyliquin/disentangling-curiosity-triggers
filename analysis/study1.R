@@ -2,6 +2,7 @@ library(tidyverse)
 library(car)
 library(lme4)
 library(jtools)
+library(simr)
 
 ###### LOAD STUDY 1A DATA #####
 
@@ -159,7 +160,7 @@ m2 <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) +
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
 summary(m2)
 
-round(car::Confint(m2), 2)
+round(Confint(m2), 2)
 drop1(m2, test = "Chisq")
 vif(m2)
 
@@ -182,6 +183,62 @@ p_panel1 <- plot_summs(m1, m2,
 p_panel1
 
 
+##### methods: sensitivity analysis for power #####
+
+mod_sim <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
+                                 scale(Entropy_z) + scale(EIG_theta)) + 
+             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
+                scale(Entropy_z) + scale(EIG_theta)|oid) ,
+           data = Data1a, control = lmerControl(optimizer = "bobyqa"))
+summary(mod_sim)
+
+
+fixef(mod_sim)["scale(RPE_MAP_abs)"] <- 0.05
+
+
+# note - this takes a long time to run! (~2 hours)
+sim_power <- powerSim(mod_sim,
+                      fcompare(.~.-scale(RPE_MAP_abs)),
+                      seed=1234, #set for replication
+                      nsim=1000, #set low for time or high for real
+                      alpha=.05) #alpha
+sim_power
+
+# Power for model comparison, (95% confidence interval):
+#   64.20% (61.14, 67.18)
+# 
+# Test: Likelihood ratio
+# Comparison to . ~ . - scale(RPE_MAP_abs) + [re]
+# 
+# Based on 1000 simulations, (0 warnings, 0 errors)
+# alpha = 0.05, nrow = 8300
+# 
+# Time elapsed: 1 h 46 m 12 s
+
+# code adapted from: https://thechangelab.stanford.edu/tutorials/power-analysis/post-hoc-power-sensitivity-analysis-using-the-sesoi/
+detectable_effect <- 0.05 #setting the effect size to test
+Current_Power <- 0.64 #current power
+
+#repeat until the power reaches 80%
+# note - this takes a long time to run! (~2 hours)
+while (Current_Power < 0.8){
+  #update the effect size
+  detectable_effect <- detectable_effect + 0.01 #increase by 0.01
+  fixef(mod_sim)["scale(RPE_MAP_abs)"] <- detectable_effect
+  
+  #Power for the effect of interest
+  SimPower_Fixed <- powerSim(mod_sim,
+                             fcompare(.~.-scale(RPE_MAP_abs)),
+                             seed=5234, #set for replication
+                             nsim=1000, #set low for time or high for real
+                             alpha=.05,
+                             progress = TRUE) 
+  
+  #examine post-hoc power
+  Current_Power <- summary(SimPower_Fixed)$mean #save the power estimate
+  cat(detectable_effect,"with power",Current_Power,"\n")
+}
+# 0.06 with power 0.807
 
 ##### SI: individual regressions ######
 
@@ -197,19 +254,19 @@ drop1(m1a, test = "Chisq")
 m1b <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
              (scale(Entropy_theta)|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m1b), 2)
+round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 
 m1c <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
              (scale(Entropy_z)|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m1c), 2)
+round(Confint(m1c), 2)
 drop1(m1c, test = "Chisq")
 
 m1d <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
              (scale(EIG_theta)|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m1d), 2)
+round(Confint(m1d), 2)
 drop1(m1d, test = "Chisq")
 
 
@@ -218,23 +275,23 @@ drop1(m1d, test = "Chisq")
 m2a <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
              (scale(RPE_MAP_abs)|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m2a), 2)
+round(Confint(m2a), 2)
 drop1(m2a, test = "Chisq")
 
 m2b <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
              (scale(Entropy_theta)|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m2b), 2)
+round(Confint(m2b), 2)
 drop1(m2b, test = "Chisq")
 
 m2c <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
              (scale(Entropy_z)|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m2c), 2)
+round(Confint(m2c), 2)
 drop1(m2c, test = "Chisq")
 
 m2d <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
              (scale(EIG_theta)|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
-round(car::Confint(m2d), 2)
+round(Confint(m2d), 2)
 drop1(m2d, test = "Chisq")
