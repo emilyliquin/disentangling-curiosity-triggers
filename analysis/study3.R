@@ -7,7 +7,11 @@ library(ggbeeswarm)
 library(emmeans)
 library(sjPlot)
 library(rstatix)
+library(partR2)
+library(patchwork)
+library(MuMIn)
 
+source("utils.R")
 
 ####### load STUDY 3 KID DATA #####
 
@@ -95,15 +99,47 @@ length(unique(Data3kids$oid))
 length(unique(Data3adults$oid))
 
 
+#### standardize variables ####
+
+Data3 <- Data3 %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+Data3kids <- Data3kids %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+Data3adults <- Data3adults %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
 
 ######### Main analyses: multiple regression #########
 
 
 ##### kids vs. adults
-m1 <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta))*AgeGroup + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)||oid) ,
+m1 <- lmer(
+  Curiosity_z ~ 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z)*AgeGroup + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z || oid),
            data = Data3, control = lmerControl(optimizer = "bobyqa"))
 summary(m1)
 
@@ -111,74 +147,138 @@ round(Confint(m1), 2)
 drop1(m1, test = "Chisq")
 vif(m1)
 
+
 #### follow-up - within kids 
 
-m1a <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta)) + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)||oid) ,
-           data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+m1a <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z || oid),
+  data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 summary(m1a)
 
 round(Confint(m1a), 2)
 drop1(m1a, test = "Chisq")
 vif(m1a)
 
+m1a.2 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (1 | oid),
+  data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+
+m1a_partr2 <- partR2(m1a.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data3kids, 
+                     max_level = 2)
+m1a_partr2
+
+
+
+
 #### follow-up - within adults
-m1b <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                  scale(Entropy_z) + scale(EIG_theta)) + 
-              (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                 scale(Entropy_z) + scale(EIG_theta)||oid) ,
-            data = Data3adults, control = lmerControl(optimizer = "bobyqa"))
+m1b <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z || oid),
+  data = Data3adults, control = lmerControl(optimizer = "bobyqa"))
 summary(m1b)
 
 round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 vif(m1b)
 
-## predicted effect at different ages
-emtrends(m1b, ~ 1, var = "Entropy_z")
+
+m1b.2 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (1 | oid),
+  data = Data3adults, control = lmerControl(optimizer = "bobyqa"))
+
+m1b_partr2 <- partR2(m1b.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data3adults, 
+                     max_level = 2)
+m1b_partr2
 
 
 
 ##### within kids
 
-# pre-scale everything because it gets weird with emmeans
-Data3kids <- Data3kids %>% mutate(Curiosity_s = as.vector(scale(Curiosity)),
-                                  RPE_MAP_abs_s = as.vector(scale(RPE_MAP_abs)),
-                                  Entropy_theta_s = as.vector(scale(Entropy_theta)),
-                                  Entropy_z_s = as.vector(scale(Entropy_z)),
-                                  EIG_theta_s = as.vector(scale(EIG_theta)))
-
-m2 <- lmer(Curiosity_s ~ (RPE_MAP_abs_s + Entropy_theta_s + 
-                            Entropy_z_s + EIG_theta_s)*AgeMonth + 
-             (RPE_MAP_abs_s + Entropy_theta_s + 
-                Entropy_z_s + EIG_theta_s||oid) ,
-           data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
+m2 <- lmer(
+  Curiosity_z ~ 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z)*AgeMonth + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z || oid),
+  data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 summary(m2)
 
-round(Confint(m2), 2)
+round(Confint(m2), 3)
 drop1(m2, test = "Chisq")
 
-## predicted effect at different ages
-emtrends(m2, ~ AgeMonth, var = "Entropy_z_s",
-         at = list(AgeMonth = c(60, 108)))
 
 
-# generate figure 4
-p_panel4 <- plot_summs(m1a, m1b, model.names = c("Children", "Adults"), legend.title = "Age Group", 
-                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                 "Global Uncertainty" = "scale(Entropy_theta)", 
-                                 "Global\nLearning Potential" = "scale(EIG_theta)",
-                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
-                       colors = c("#e5d200", "#999999"),
+# generate figure, study 3
+p_panel4 <- plot_summs(m1b, m1a, model.names = c("Adults", "Children"), legend.title = "Age Group", 
+                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                 "Global\nlearning potential" = "EIG_theta_z",
+                                 "Global uncertainty" = "Entropy_theta_z",
+                                 "Surprise" = "RPE_MAP_abs_z"),
+                       colors = c("#999999", "#e5d200"),
                        point.size = 4) + 
   theme_classic(base_size = 8) + 
   theme(legend.position = "right") + 
-  ylab("Model-Estimated Trigger") + 
-  xlab("Standardized Coefficient")+ 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9))
 p_panel4
+
+
+kids_partr2 <- m1a_partr2$R2
+adults_partr2 <- m1b_partr2$R2
+
+p1 <- plot_partr2(kids_partr2) + ggtitle("Children")
+p2 <- plot_partr2(adults_partr2) + ggtitle("Adults")
+
+
+
+
+combined_fig_s2 <- p_panel4 / (p2 | p1 ) + plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+combined_fig_s2
+
+ggsave("../figures/Study3_Results.pdf", combined_fig_s2, width = 6.5, height = 5, units = "in")
+
+
 
 
 ##### SI: alternative explanations ######
@@ -346,26 +446,26 @@ Confint(mguessb)
 
 ##### control for learning noise in analysis of triggers
 
-m <- lmer(scale(Curiosity) ~ 
-            (scale(RPE_MAP_abs) + 
-               scale(Entropy_theta) + 
-               scale(Entropy_z) + 
-               scale(EIG_theta))*AgeGroup + 
-            (scale(RPE_MAP_abs) + 
-               scale(Entropy_theta) + 
-               scale(Entropy_z) + 
-               scale(EIG_theta))*Av_abs_guess_error + 
-            (scale(RPE_MAP_abs) + 
-               scale(Entropy_theta) + 
-               scale(Entropy_z) + 
-               scale(EIG_theta)||oid), data = Data3,
+m <- lmer(Curiosity_z ~ 
+            (RPE_MAP_abs_z +
+               Entropy_theta_z +
+               Entropy_z_z + 
+               EIG_theta_z)*AgeGroup + 
+            (RPE_MAP_abs_z +
+               Entropy_theta_z +
+               Entropy_z_z + 
+               EIG_theta_z)*Av_abs_guess_error + 
+            (RPE_MAP_abs_z +
+               Entropy_theta_z +
+               Entropy_z_z + 
+               EIG_theta_z||oid), data = Data3,
           control = lmerControl(optimizer= "bobyqa"))
 summary(m)
 Confint(m)
 drop1(m, test = "Chisq")
 
 #### figure S2, bottom
-plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"), 
+plot_model(m, terms = c("Entropy_z_z", "AgeGroup", "Av_abs_guess_error"), 
                    type = "pred") + 
   theme_classic(base_size = 10) + 
   scale_color_manual(values = c("#e5d200", "#999999")) +
@@ -379,104 +479,162 @@ plot_model(m, terms = c("Entropy_z", "AgeGroup", "Av_abs_guess_error"),
 
 
 # surprise
-regs1_adults <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
-                      (scale(RPE_MAP_abs)||oid) ,
+regs1_adults <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+                      (RPE_MAP_abs_z||oid) ,
                     data = Data3adults, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs1_adults), 2)
 drop1(regs1_adults, test = "Chisq")
+r.squaredGLMM(regs1_adults)
 
-regs1_kids <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
-                       (scale(RPE_MAP_abs)||oid) ,
+regs1_kids <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+                       (RPE_MAP_abs_z||oid) ,
                      data = Data3kids, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs1_kids), 2)
 drop1(regs1_kids, test = "Chisq")
+r.squaredGLMM(regs1_kids)
 
-regs1a <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs)*AgeGroup + 
-                (scale(RPE_MAP_abs)||oid) ,
+regs1a <- lmer(Curiosity_z ~ RPE_MAP_abs_z*AgeGroup + 
+                (RPE_MAP_abs_z||oid) ,
               data = Data3, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs1a, test = "Chisq")
 
-regs1b <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs)*AgeMonth + 
-                (scale(RPE_MAP_abs)||oid) ,
+regs1b <- lmer(Curiosity_z ~ RPE_MAP_abs_z*AgeMonth + 
+                (RPE_MAP_abs_z||oid) ,
               data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs1b, test = "Chisq")
 
 
 # global uncertainty
-regs2_adults <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
-                       (scale(Entropy_theta)||oid) ,
+regs2_adults <- lmer(Curiosity_z ~ Entropy_theta_z + 
+                       (Entropy_theta_z||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
+summary(regs2_adults)
 round(Confint(regs2_adults), 2)
 drop1(regs2_adults, test = "Chisq")
+r.squaredGLMM(regs2_adults)
 
-regs2_kids <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
-                     (scale(Entropy_theta)||oid) ,
+regs2_kids <- lmer(Curiosity_z ~ Entropy_theta_z + 
+                     (Entropy_theta_z||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs2_kids), 2)
 drop1(regs2_kids, test = "Chisq")
+r.squaredGLMM(regs2_kids)
 
-regs2a <- lmer(scale(Curiosity) ~ scale(Entropy_theta)*AgeGroup + 
-                 (scale(Entropy_theta)||oid) ,
+regs2a <- lmer(Curiosity_z ~ Entropy_theta_z*AgeGroup + 
+                 (Entropy_theta_z||oid) ,
                data = Data3, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs2a, test = "Chisq")
 
-regs2b <- lmer(scale(Curiosity) ~ scale(Entropy_theta)*AgeMonth + 
-                 (scale(Entropy_theta)||oid) ,
+regs2b <- lmer(Curiosity_z ~ Entropy_theta_z*AgeMonth + 
+                 (Entropy_theta_z||oid) ,
                data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs2b, test = "Chisq")
 
+
+
 # local learning potential
-regs3_adults <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
-                       (scale(Entropy_z)||oid) ,
+regs3_adults <- lmer(Curiosity_z ~ Entropy_z_z + 
+                       (Entropy_z_z||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs3_adults), 2)
 drop1(regs3_adults, test = "Chisq")
+r.squaredGLMM(regs3_adults)
 
-regs3_kids <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
-                     (scale(Entropy_z)||oid) ,
+regs3_kids <- lmer(Curiosity_z ~ Entropy_z_z + 
+                     (Entropy_z_z||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs3_kids), 2)
 drop1(regs3_kids, test = "Chisq")
+r.squaredGLMM(regs3_kids)
 
-regs3a <- lmer(scale(Curiosity) ~ scale(Entropy_z)*AgeGroup + 
-                 (scale(Entropy_z)||oid) ,
+
+regs3a <- lmer(Curiosity_z ~ Entropy_z_z*AgeGroup + 
+                 (Entropy_z_z||oid) ,
                data = Data3, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs3a, test = "Chisq")
 
-regs3b <- lmer(scale(Curiosity) ~ scale(Entropy_z)*AgeMonth + 
-                 (scale(Entropy_z)||oid) ,
+regs3b <- lmer(Curiosity_z ~ Entropy_z_z*AgeMonth + 
+                 (Entropy_z_z||oid) ,
                data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs3b, test = "Chisq")
 
 # global learning potential
-regs4_adults <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
-                       (scale(EIG_theta)||oid) ,
+regs4_adults <- lmer(Curiosity_z ~ EIG_theta_z + 
+                       (EIG_theta_z||oid) ,
                      data = Data3adults, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs4_adults), 2)
 drop1(regs4_adults, test = "Chisq")
+r.squaredGLMM(regs4_adults)
 
-regs4_kids <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
-                     (scale(EIG_theta)||oid) ,
+regs4_kids <- lmer(Curiosity_z ~ EIG_theta_z + 
+                     (EIG_theta_z||oid) ,
                    data = Data3kids, 
                    control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs4_kids), 2)
 drop1(regs4_kids, test = "Chisq")
+r.squaredGLMM(regs4_kids)
 
-regs4a <- lmer(scale(Curiosity) ~ scale(EIG_theta)*AgeGroup + 
-                 (scale(EIG_theta)||oid) ,
+regs4a <- lmer(Curiosity_z ~ EIG_theta_z*AgeGroup + 
+                 (EIG_theta_z||oid) ,
                data = Data3, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs4a, test = "Chisq")
 
-regs4b <- lmer(scale(Curiosity) ~ scale(EIG_theta)*AgeMonth + 
-                 (scale(EIG_theta)||oid) ,
+regs4b <- lmer(Curiosity_z ~ EIG_theta_z*AgeMonth + 
+                 (EIG_theta_z||oid) ,
                data = Data3kids, control = lmerControl(optimizer = "bobyqa"))
 drop1(regs4b, test = "Chisq")
 
+
+
+##### ordinal regression version #####
+
+library(ordinal)
+
+Data3$Curiosity_Ord <- as.ordered(Data3$Curiosity)
+Data3kids$Curiosity_Ord <- as.ordered(Data3kids$Curiosity)
+Data3adults$Curiosity_Ord <- as.ordered(Data3adults$Curiosity)
+
+full_mod <- clmm(Curiosity_Ord ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                   Entropy_z_z + EIG_theta_z)*AgeGroup + 
+                   (1|oid), data=Data3)
+summary(full_mod)
+round(exp(Confint(full_mod)), 2)
+drop1(full_mod, test = "Chisq")
+
+
+
+kid_mod <- clmm(Curiosity_Ord ~ RPE_MAP_abs_z + Entropy_theta_z + 
+               Entropy_z_z + EIG_theta_z + (1|oid), data=Data3kids)
+summary(kid_mod)
+round(exp(Confint(kid_mod)), 2)
+drop1(kid_mod, test = "Chisq")
+
+
+adult_mod <- clmm(Curiosity_Ord ~ RPE_MAP_abs_z + Entropy_theta_z + 
+                  Entropy_z_z + EIG_theta_z + (1|oid), data=Data3adults)
+summary(adult_mod)
+round(exp(Confint(adult_mod)), 2)
+drop1(adult_mod, test = "Chisq")
+
+plot_summs(adult_mod, kid_mod)
+
+p_supp_ordinal <- plot_summs(adult_mod, kid_mod, model.names = c("Adults", "Children"), legend.title = "Age Group", 
+                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                 "Global\nlearning potential" = "EIG_theta_z",
+                                 "Global uncertainty" = "Entropy_theta_z",
+                                 "Surprise" = "RPE_MAP_abs_z"),
+                       colors = c("#999999", "#e5d200"),
+                       point.size = 4) + 
+  theme_classic(base_size = 10) + 
+  theme(legend.position = "right") + 
+  ylab("Predictor") + 
+  xlab(expression("Regression coefficient (log odds)"))
+p_supp_ordinal
 

@@ -3,6 +3,11 @@ library(car)
 library(lme4)
 library(jtools)
 library(simr)
+library(partR2)
+library(MuMIn)
+
+# load utilities (for plotting)
+source("utils.R")
 
 ###### LOAD STUDY 1A DATA #####
 
@@ -105,6 +110,16 @@ Data1b$RPE_MAP_abs <- ifelse(is.nan(Data1b$RPE_MAP_abs), 0.5, Data1b$RPE_MAP_abs
 
 ##### other data cleaning 
 
+# scale everything
+Data1a <- Data1a %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+
 # make more interpretable condition variable
 Data1b$agent_condition <- ifelse(Data1b$condition == 1, "bandit",
                                 ifelse(Data1b$condition == 2, "tycoon", 
@@ -138,67 +153,166 @@ summary(demographics_s1b$condition)
 cor.test(Data1a$Entropy_theta, Data1a$EIG_theta)
 
 
+##### main regression model #####
 
-m1 <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta)) + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid) ,
-           data = Data1a, control = lmerControl(optimizer = "bobyqa"))
+m1 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data1a,
+  control = lmerControl(optimizer = "bobyqa")
+)
 summary(m1)
-
 round(Confint(m1), 2)
 drop1(m1, test = "Chisq")
 vif(m1)
 
 
+#### partial r2 - relative contributions ####
+# only possible without random slopes, so we need to refit the model
+m1a <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z + 
+    (1 | oid),
+  data = Data1a,
+  control = lmerControl(optimizer = "bobyqa")
+)
+
+m1a_partr2 <- partR2(m1a,
+       partvars = c("RPE_MAP_abs_z",
+                    "Entropy_theta_z",
+                    "Entropy_z_z",
+                    "EIG_theta_z"),
+       data = Data1a, 
+       max_level = 2)
+
+m1a_partr2
+
+
+
 ######### study 1b #######
 
-m2 <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta)) + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid),
-           data = Data1b, control = lmerControl(optimizer = "bobyqa"))
-summary(m2)
+# scale everything
+Data1b <- Data1b %>%
+  mutate(
+    Curiosity_z = scale(curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
 
+##### main regression model #####
+
+m2 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data1b,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m2)
 round(Confint(m2), 2)
 drop1(m2, test = "Chisq")
 vif(m2)
 
 
-##### make Fig. 3 part 1
+
+#### partial r2 - relative contributions ####
+# only works without random slopes
+m2a <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z + 
+    (1 | oid),
+  data = Data1b,
+  control = lmerControl(optimizer = "bobyqa")
+)
+summary(m2a)
+
+
+m2a_partr2 <- partR2(m2a,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data1b, 
+                    max_level = 2)
+m2a_partr2
+
+##### make Figure for Study 1 ######
 p_panel1 <- plot_summs(m1, m2, 
-                       model.names = c("1a (Yoked Choice)", "1b (Free Choice)"), 
-                       legend.title = "Study", coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                                         "Global Uncertainty" = "scale(Entropy_theta)",
-                                                         "Global\nLearning Potential" = "scale(EIG_theta)",
-                                                         "Local\nLearning Potential" = "scale(Entropy_z)"),
+                       model.names = c("1a (yoked choice)", "1b (free choice)"), 
+                       legend.title = "Study", coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                                         "Global\nlearning potential" = "EIG_theta_z",
+                                                         "Global uncertainty" = "Entropy_theta_z",
+                                                         "Surprise" = "RPE_MAP_abs_z"
+                                                         ),
                        colors = c("#49b7fc", "#ff7b00"),
                        point.size = 4)+ 
   theme_classic(base_size = 8) + 
   theme(legend.position = "right") + 
-  ylab("") + 
-  xlab("") + 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
-  ggtitle("Study 1")
+  ggtitle("Study 1") 
 p_panel1
+
+
+### make plots for part R2 ###
+
+s1a_partr2 <- m1a_partr2$R2
+s1b_partr2 <- m2a_partr2$R2
+
+
+p1 <- plot_partr2(s1a_partr2) + ggtitle("Study 1a (yoked choice)")
+
+p2 <- plot_partr2(s1b_partr2) + ggtitle("Study 1b (free choice)")
+
+
+
+library(patchwork)
+combined_fig_s1 <- p_panel1 / (p1 | p2)+ plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+combined_fig_s1
+
+ggsave("../figures/Study1_Results.pdf", combined_fig_s1, width = 6.5, height = 5, units = "in")
 
 
 ##### methods: sensitivity analysis for power #####
 
-mod_sim <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta)) + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid) ,
-           data = Data1a, control = lmerControl(optimizer = "bobyqa"))
+mod_sim <- lmer(Curiosity_z ~ RPE_MAP_abs_z + Entropy_theta_z + 
+                                 Entropy_z_z + EIG_theta_z + 
+             (RPE_MAP_abs_z + Entropy_theta_z + 
+                Entropy_z_z + EIG_theta_z|oid) ,
+           data = Data1a, 
+           control = lmerControl(optimizer = "bobyqa"))
 summary(mod_sim)
 
 
-fixef(mod_sim)["scale(RPE_MAP_abs)"] <- 0.05
+fixef(mod_sim)["RPE_MAP_abs_z"] <- 0.05
 
 
 # note - this takes a long time to run! (~2 hours)
 sim_power <- powerSim(mod_sim,
-                      fcompare(.~.-scale(RPE_MAP_abs)),
+                      fcompare(.~.-RPE_MAP_abs_z),
                       seed=1234, #set for replication
                       nsim=1000, #set low for time or high for real
                       alpha=.05) #alpha
@@ -224,11 +338,11 @@ Current_Power <- 0.64 #current power
 while (Current_Power < 0.8){
   #update the effect size
   detectable_effect <- detectable_effect + 0.01 #increase by 0.01
-  fixef(mod_sim)["scale(RPE_MAP_abs)"] <- detectable_effect
+  fixef(mod_sim)["RPE_MAP_abs_z"] <- detectable_effect
   
   #Power for the effect of interest
   SimPower_Fixed <- powerSim(mod_sim,
-                             fcompare(.~.-scale(RPE_MAP_abs)),
+                             fcompare(.~.-RPE_MAP_abs_z),
                              seed=5234, #set for replication
                              nsim=1000, #set low for time or high for real
                              alpha=.05,
@@ -245,53 +359,62 @@ while (Current_Power < 0.8){
 
 ##### for Study 1a: individual regressions
 
-m1a <- lmer(scale(Curiosity) ~ scale(RPE_MAP_abs) + 
-             (scale(RPE_MAP_abs)|oid) ,
+m1a <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+             (RPE_MAP_abs_z|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m1a), 2)
 drop1(m1a, test = "Chisq")
+r.squaredGLMM(m1a)
 
-m1b <- lmer(scale(Curiosity) ~ scale(Entropy_theta) + 
-             (scale(Entropy_theta)|oid) ,
+m1b <- lmer(Curiosity_z ~ Entropy_theta_z + 
+             (Entropy_theta_z|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
+r.squaredGLMM(m1b)
 
-m1c <- lmer(scale(Curiosity) ~ scale(Entropy_z) + 
-             (scale(Entropy_z)|oid) ,
+m1c <- lmer(Curiosity_z ~ Entropy_z_z + 
+             (Entropy_z_z|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m1c), 2)
 drop1(m1c, test = "Chisq")
+r.squaredGLMM(m1c)
 
-m1d <- lmer(scale(Curiosity) ~ scale(EIG_theta) + 
-             (scale(EIG_theta)|oid) ,
+m1d <- lmer(Curiosity_z ~ EIG_theta_z + 
+             (EIG_theta_z|oid) ,
            data = Data1a, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m1d), 2)
 drop1(m1d, test = "Chisq")
+r.squaredGLMM(m1d)
 
 
 ##### for Study 1b: individual regressions
 
-m2a <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
-             (scale(RPE_MAP_abs)|oid) ,
+m2a <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+             (RPE_MAP_abs_z|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m2a), 2)
 drop1(m2a, test = "Chisq")
+r.squaredGLMM(m2a)
 
-m2b <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
-             (scale(Entropy_theta)|oid) ,
+
+m2b <- lmer(Curiosity_z ~ Entropy_theta_z + 
+             (Entropy_theta_z|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m2b), 2)
 drop1(m2b, test = "Chisq")
+r.squaredGLMM(m2b)
 
-m2c <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
-             (scale(Entropy_z)|oid) ,
+m2c <- lmer(Curiosity_z ~ Entropy_z_z + 
+             (Entropy_z_z|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m2c), 2)
 drop1(m2c, test = "Chisq")
+r.squaredGLMM(m2c)
 
-m2d <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
-             (scale(EIG_theta)|oid) ,
+m2d <- lmer(Curiosity_z ~ EIG_theta_z + 
+             (EIG_theta_z|oid) ,
            data = Data1b, control = lmerControl(optimizer = "bobyqa"))
 round(Confint(m2d), 2)
 drop1(m2d, test = "Chisq")
+r.squaredGLMM(m2d)

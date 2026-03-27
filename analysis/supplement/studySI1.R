@@ -8,6 +8,10 @@ library(Formula)
 library(gridExtra)
 library(jtools)
 library(emmeans)
+library(partR2)
+library(MuMIn)
+
+source("../utils.R")
 
 
 ####### load STUDY S2 DATA- part 1, fixed choice #####
@@ -99,6 +103,24 @@ DataS1$Heuristic <- ifelse(DataS1$task_condition == "Choice",
                            DataS1$Difference_50)
 
 
+##### standardize everything #####
+DataS1 <- DataS1 %>%
+  mutate(
+    Curiosity_z = scale(curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+    VOI_theta_choice_z = scale(VOI_theta_choice),
+    VOI_theta_prediction_z = scale(VOI_theta_prediction),
+    VOI_theta_z = scale(VOI_theta),
+    VOI_z_choice_z = scale(VOI_z_choice),
+    VOI_z_prediction_z = scale(VOI_z_prediction),
+    VOI_z_z = scale(VOI_z),
+    Difference_50_z = scale(Difference_50),
+    Difference_competitor_z = scale(Difference_competitor),
+    Heuristic_z = scale(Heuristic)
+  )
 
 ########### Analyses ###############
 
@@ -109,7 +131,7 @@ DataS1$chosen_mine_prob <- as.factor(DataS1$chosen_mine_prob)
 DataS1$task_condition <- as.factor(DataS1$task_condition)
 DataS1$oid <- as.factor(DataS1$oid)
 
-mod1 <- lmer(scale(curiosity) ~ task_condition*chosen_mine_prob + (chosen_mine_prob|oid), data = DataS1)
+mod1 <- lmer(Curiosity_z ~ task_condition*chosen_mine_prob + (chosen_mine_prob|oid), data = DataS1)
 summary(mod1)
 drop1(mod1, test = "Chisq")
 
@@ -123,9 +145,9 @@ emmeans(mod1, pairwise ~ chosen_mine_prob, pbkrtest.limit = 9150)
 DataS1$task_condition <- relevel(DataS1$task_condition, ref = "Choice")
 
 # heuristic value
-mod_heur <- lmer(scale(curiosity) ~ (scale(Difference_50) + scale(Difference_competitor))*
+mod_heur <- lmer(Curiosity_z ~ (Difference_50_z + Difference_competitor_z)*
                    task_condition + 
-                   (scale(Difference_50) + scale(Difference_competitor)|oid), 
+                   (Difference_50_z + Difference_competitor_z|oid), 
                  data = DataS1, 
                  control = lmerControl(optimizer = "bobyqa"))
 (sum_heur <- summary(mod_heur))
@@ -135,8 +157,8 @@ drop1(mod_heur, test = "Chisq")
 
 
 #### VOI
-mod_V1 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_z_prediction) + scale(VOI_z_choice))*task_condition + 
-                       (scale(VOI_z_prediction) + scale(VOI_z_choice)|oid), 
+mod_V1 <- lme4::lmer(Curiosity_z ~ (VOI_z_prediction_z + VOI_z_choice_z)*task_condition + 
+                       (VOI_z_prediction_z + VOI_z_choice_z|oid), 
                      data = DataS1)
 (sum_V1 <- summary(mod_V1))
 Confint(mod_V1)
@@ -145,8 +167,8 @@ drop1(mod_V1, test = "Chisq")
 
 
 #### VPI
-mod_V2 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_theta_prediction) + scale(VOI_theta_choice))*task_condition + 
-                       (scale(VOI_theta_prediction) + scale(VOI_theta_choice)|oid), 
+mod_V2 <- lme4::lmer(Curiosity_z ~ (VOI_theta_prediction_z + VOI_theta_choice_z)*task_condition + 
+                       (VOI_theta_prediction_z + VOI_theta_choice_z|oid), 
                      data = DataS1,
                      control = lmerControl(optimizer = "bobyqa"))
 (sum_V2 <- summary(mod_V2))
@@ -157,116 +179,154 @@ drop1(mod_V2, test = "Chisq")
 
 ##### Does instrumental value predict curiosity when just looking at condition-aligned versions? #####
 
-m3 <- lme4::lmer(scale(curiosity) ~ (scale(Heuristic)) + 
-                   (scale(Heuristic)|oid),
+m3 <- lme4::lmer(Curiosity_z ~ (Heuristic_z) + 
+                   (Heuristic_z|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
 Confint(m3)
+r.squaredGLMM(m3)
 
-m3 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_z)) + 
-                   (scale(VOI_z)|oid),
+m3 <- lme4::lmer(Curiosity_z ~ (VOI_z_z) + 
+                   (VOI_z_z|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
 Confint(m3)
+r.squaredGLMM(m3)
 
-m3 <- lme4::lmer(scale(curiosity) ~ (scale(VOI_theta)) + 
-                   (scale(VOI_theta)|oid),
+
+m3 <- lme4::lmer(Curiosity_z ~ (VOI_theta_z) + 
+                   (VOI_theta_z|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
 Confint(m3)
+r.squaredGLMM(m3)
 
 
 #### base model - replicate other studies
 
-m3 <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                       scale(Entropy_z) + scale(EIG_theta)) + 
-                   (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                      scale(Entropy_z) + scale(EIG_theta)|oid),
+m3 <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                       Entropy_z_z + EIG_theta_z) + 
+                   (RPE_MAP_abs_z + Entropy_theta_z + 
+                      Entropy_z_z + EIG_theta_z|oid),
                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3)
 drop1(m3, test = "Chisq")
 Confint(m3)
 
+# part r2
+m3a <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                    Entropy_z_z + EIG_theta_z) + 
+                (1|oid) ,
+              data = DataS1, 
+              control = lmerControl(optimizer = "bobyqa"))
+
+m3a_partr2 <- partR2(m3a,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = DataS1, 
+                     max_level = 2)
+m3a_partr2
+
+
 ### add each instrumental feature
 
-m3a <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                        scale(Entropy_z) + scale(EIG_theta) + 
-                                        scale(Heuristic)) + 
-                    (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                       scale(Entropy_z) + scale(EIG_theta) + scale(Heuristic)|oid),
+m3a <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                        Entropy_z_z + EIG_theta_z + 
+                                        Heuristic_z) + 
+                    (RPE_MAP_abs_z + Entropy_theta_z + 
+                       Entropy_z_z + EIG_theta_z + Heuristic_z|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3a)
 Confint(m3a)
 drop1(m3a, test = "Chisq")
 
 
-m3b <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                        scale(Entropy_z) + scale(EIG_theta) + 
-                                        scale(VOI_z)) + 
-                    (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                       scale(Entropy_z) + scale(EIG_theta) + scale(VOI_z)|oid),
+m3b <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                        Entropy_z_z + EIG_theta_z + 
+                                        VOI_z_z) + 
+                    (RPE_MAP_abs_z + Entropy_theta_z + 
+                       Entropy_z_z + EIG_theta_z + VOI_z_z|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3b)
 Confint(m3b)
 drop1(m3b, test = "Chisq")
 
+# get part r2
+m3b.2 <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                        Entropy_z_z + EIG_theta_z + 
+                                        VOI_z_z) + 
+                    (1|oid),
+                  data = DataS1, control = lmerControl(optimizer = "bobyqa"))
+m3b.2_partr2 <- partR2(m3b.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z",
+                                  "VOI_z_z"),
+                     data = DataS1, 
+                     max_level = 2)
+m3b.2_partr2
 
-m3c <- lme4::lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                        scale(Entropy_z) + scale(EIG_theta) + 
-                                        scale(VOI_theta)) + 
-                    (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                       scale(Entropy_z) + scale(EIG_theta) + scale(VOI_theta)|oid),
+
+m3c <- lme4::lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                        Entropy_z_z + EIG_theta_z + 
+                                        VOI_theta_z) + 
+                    (RPE_MAP_abs_z + Entropy_theta_z + 
+                       Entropy_z_z + EIG_theta_z + VOI_theta_z|oid),
                   data = DataS1, control = lmerControl(optimizer = "bobyqa"))
 summary(m3c)
 Confint(m3c)
 drop1(m3c, test = "Chisq")
 
 
-psupp1 <- plot_summs(m3, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                                     "Global Uncertainty" = "scale(Entropy_theta)", 
-                                                     "Global\nLearning Potential" = "scale(EIG_theta)",
-                                                     "Local\nLearning Potential" = "scale(Entropy_z)"),
-                             colors = c("#0015ff")) + 
-  theme_classic(base_size = 12) + 
-  ylab("Model-Estimated Trigger") + 
-  xlab("Standardized Coefficient") + 
+psupp1 <- plot_summs(m3, coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                     "Global\nlearning potential" = "EIG_theta_z",
+                     "Global uncertainty" = "Entropy_theta_z", 
+                     "Surprise" = "RPE_MAP_abs_z"),
+                             colors = c("#0015ff"),
+                     point.size = 4) + 
+  theme_classic(base_size = 8) + 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
   theme(legend.position = "right")
 psupp1
 
-psupp2 <- plot_summs(m3b, m3c, m3a, coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                                     "Global Uncertainty" = "scale(Entropy_theta)", 
-                                                     "Global\nLearning Potential" = "scale(EIG_theta)",
-                                                     "Local\nLearning Potential" = "scale(Entropy_z)",
-                                                     "VOI" = "scale(VOI_z)",
-                                                     "VPI" = "scale(VOI_theta)",
-                                                     "HV" = "scale(Heuristic)"),
+psupp2 <- plot_summs(m3b, m3c, m3a, coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                              "Global\nlearning potential" = "EIG_theta_z",
+                                              "Global uncertainty" = "Entropy_theta_z", 
+                                              "Surprise" = "RPE_MAP_abs_z",
+                                                     "VOI" = "VOI_z_z",
+                                                     "VPI" = "VOI_theta_z",
+                                                     "HV" = "Heuristic_z"),
                             model.names = c("Model 1\n(VOI added)",
                                             "Model 2\n(VPI added)",
-                                            "Model 3\n(HV added)")) + 
-  theme_classic(base_size = 12) + 
-  ylab("Model-Estimated Trigger") + 
-  xlab("Standardized Coefficient") + 
+                                            "Model 3\n(HV added)"),
+                     point.size = 4) + 
+  theme_classic(base_size = 8) + 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) +
   theme(legend.position = "right")
 psupp2
 
+partr2_data <- m3a_partr2$R2
 
-h_patch <- psupp1 / psupp2 + plot_layout(heights = c(1, 2)) & 
-  ylab(NULL) & theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5))
-# Use the tag label as a y-axis label
-final_plot <- wrap_elements(h_patch) +
-  labs(tag = "Model-Estimated Trigger") +
-  theme(
-    plot.tag = element_text(size = rel(1.1), angle = 90),
-    plot.tag.position = "left"
-  )
+p1 <- plot_partr2(partr2_data) 
+p1
+
+h_patch <- (free(psupp1) | p1) / psupp2 + plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+h_patch
+
+ggsave("../../figures/StudySI1_Results.pdf", h_patch, width = 6.5, height = 5, units = "in")
 
 
 
 #################################### PART 3: Does instrumental value predict choices? #################################### 
-
 
 
 ## we only want to look at free choice trials

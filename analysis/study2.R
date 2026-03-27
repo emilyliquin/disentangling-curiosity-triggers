@@ -2,6 +2,10 @@ library(tidyverse)
 library(car)
 library(lme4)
 library(jtools)
+library(partR2)
+library(MuMIn)
+
+source("utils.R")
 
 ###### LOAD STUDY 2A DATA #####
 
@@ -12,7 +16,7 @@ Data2a <- read_csv("../data/study2a.csv")
 # incorrect answers to attn checks
 Data2a <- Data2a %>% filter(Include == 1)
 
-# same curioisty rating on all trials
+# same curiosity rating on all trials
 to_exclude <- Data2a %>% group_by(oid) %>%
   summarize(same_rating = length(unique(curiosity)) == 1) %>%
   filter(same_rating == TRUE)
@@ -69,6 +73,7 @@ demographics_s2a <- Data2a %>% group_by(oid) %>%
 summary(demographics_s2a$age)
 table(demographics_s2a$gender)
 summary(demographics_s2a$condition)
+
 
 ###### LOAD STUDY 2b DATA #####
 
@@ -137,107 +142,239 @@ summary(demographics_s2b$age)
 table(demographics_s2b$gender)
 summary(demographics_s2b$condition)
 
+#### create data subsets #####
+Data2aLocal <- Data2a %>% 
+  filter(rating_condition == "Curiosity_Outcome")
+Data2aGlobal <- Data2a %>% 
+  filter(rating_condition == "Curiosity_Mine")
+
+
+#### standardize variables ####
+
+Data2a <- Data2a %>%
+  mutate(
+    Curiosity_z = scale(curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+Data2b <- Data2b %>%
+  mutate(
+    GlobalLearning_z = scale(globallearn),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+
+Data2aLocal <- Data2aLocal %>%
+  mutate(
+    Curiosity_z = scale(curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
+
+Data2aGlobal <- Data2aGlobal %>%
+  mutate(
+    Curiosity_z = scale(curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
 
 ######### Main analyses: multiple regression #########
 
 ##### study 2a ######
 
-m1 <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta))*rating_condition + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid) ,
-           data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+m1 <- lmer(
+  Curiosity_z ~ 
+    (RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z)*rating_condition + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data2a,
+  control = lmerControl(optimizer = "bobyqa")
+)
 summary(m1)
 
-round(Confint(m1), 2)
+round(Confint(m1), 3)
 drop1(m1, test = "Chisq")
 vif(m1)
 
 # follow up - just in LOCAL learning goal condition
-m1a <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta)) + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid) ,
-           data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
-           control = lmerControl(optimizer = "bobyqa"))
+m1a <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data2aLocal,
+  control = lmerControl(optimizer = "bobyqa")
+)
 summary(m1a)
 round(Confint(m1a), 2)
 drop1(m1a, test = "Chisq")
 vif(m1a)
 
+#### partial r2 - relative contributions ####
+
+m1a.2 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (1 | oid),
+  data = Data2aLocal,
+  control = lmerControl(optimizer = "bobyqa")
+)
+
+m1a_partr2 <- partR2(m1a.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data2aLocal,
+                     max_level = 2)
+m1a_partr2
+
 # follow up - just in GLOBAL learning goal condition
-m1b <- lmer(scale(curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                  scale(Entropy_z) + scale(EIG_theta)) + 
-              (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                 scale(Entropy_z) + scale(EIG_theta)|oid) ,
-            data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
-            control = lmerControl(optimizer = "bobyqa"))
+m1b <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data2aGlobal,
+  control = lmerControl(optimizer = "bobyqa")
+)
 summary(m1b)
 round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 vif(m1b)
 
-# global - just Entropy_z
-m1c <- lmer(scale(curiosity) ~ (scale(Entropy_z)) + 
-              (scale(Entropy_z)|oid) ,
-            data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
-            control = lmerControl(optimizer = "bobyqa"))
-summary(m1c)
-round(Confint(m1c), 2)
-drop1(m1c, test = "Chisq")
+#### partial r2 - relative contributions ####
 
-##### make Fig. 3 part 2
+m1b.2 <- lmer(
+  Curiosity_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (1 | oid),
+  data = Data2aGlobal,
+  control = lmerControl(optimizer = "bobyqa")
+)
 
-p_panel2 <- plot_summs(m1b, m1a, model.names = c("Mine (Global)", "Outcome (Local)"), legend.title = "Target of Curiosity", 
-                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                 "Global Uncertainty" = "scale(Entropy_theta)", 
-                                 "Global\nLearning Potential" = "scale(EIG_theta)",
-                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
+m1b_partr2 <- partR2(m1b.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data2aGlobal,
+                     max_level = 2)
+m1b_partr2
+
+##### make Study 2 figure 1 #####
+
+p_panel2 <- plot_summs(m1b, m1a, model.names = c("Mine (global)", "Outcome (local)"), legend.title = "Target of curiosity", 
+                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                 "Global uncertainty" = "Entropy_theta_z", 
+                                 "Global\nlearning potential" = "EIG_theta_z",
+                                 "Surprise" = "RPE_MAP_abs_z"
+                                 ),
                        colors = c("#17d898", "#ff0083"),
                        point.size = 4)+ 
   theme_classic(base_size = 8) + 
   theme(legend.position = "right") + 
-  ylab("") + 
-  xlab("") + 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
   ggtitle("Study 2a")
 
 p_panel2
 
 
+### make plots for part R2 ###
+
+local_partr2 <- m1a_partr2$R2
+global_partr2 <- m1b_partr2$R2
+
+
+p1 <- plot_partr2(local_partr2) + ggtitle("Curiosity about outcome (local)")
+
+p2 <- plot_partr2(global_partr2) + ggtitle("Curiosity about mine (global)")
+
+
+
+library(patchwork)
+
+
+combined_fig_s2a <- p_panel2 / (p2 | p1) + plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+combined_fig_s2a
+
+ggsave("../figures/Study2a_Results.pdf", combined_fig_s2a, width = 6.5, height = 5, units = "in")
+
+
 ######### study 2b #######
 
-
 # combine data with Curiosity_Outcome condition of Study 2a
-Data2a_local <- Data2a %>% filter(rating_condition == "Curiosity_Outcome")
-
 
 ### make sure oids are distinct
-Data2a_local$oid <- as.factor(as.numeric(as.character(Data2a_local$oid)) + 1000)
-sum(Data2b$oid %in% Data2a_local$oid)
-sum(Data2a_local$oid %in% Data2b$oid)
+Data2aLocal$oid <- as.factor(as.numeric(as.character(Data2aLocal$oid)) + 1000)
+sum(Data2b$oid %in% Data2aLocal$oid)
+sum(Data2aLocal$oid %in% Data2b$oid)
 
 ### change curiosity and globallearn to rating
-colnames(Data2a_local)[which(colnames(Data2a_local) == "curiosity")] <- "rating"
+colnames(Data2aLocal)[which(colnames(Data2aLocal) == "curiosity")] <- "rating"
 colnames(Data2b)[which(colnames(Data2b) == "globallearn")] <- "rating"
 
-
-### merge dataframes to full data
-all.equal(colnames(Data2a_local), colnames(Data2b))
-
-DataFull <- rbind(Data2a_local, Data2b)
+### remove columns for z-scored curiosity and global learning during merge
+DataFull <- rbind(Data2aLocal %>% select(!Curiosity_z), 
+                  Data2b %>% select(!GlobalLearning_z))
 
 DataFull$rating_condition <- as.factor(DataFull$rating_condition)
 
-
+DataFull <- DataFull %>%
+  mutate(
+    Rating_z = scale(rating),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta),
+  )
 
 ##### multiple regression
 
-m2 <- lmer(scale(rating) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta))*rating_condition + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)|oid),
-           data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+m2 <- lmer(
+  Rating_z ~ 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z)*rating_condition + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = DataFull, 
+  control = lmerControl(optimizer = "bobyqa"))
 summary(m2)
 
 round(Confint(m2), 2)
@@ -245,32 +382,79 @@ drop1(m2, test = "Chisq")
 vif(m2)
 
 # follow up - just rating global learning potential
-m2a <- lmer(scale(rating) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                  scale(Entropy_z) + scale(EIG_theta)) + 
-              (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                 scale(Entropy_z) + scale(EIG_theta)|oid) ,
-            data = Data2b, 
-            control = lmerControl(optimizer = "bobyqa"))
+m2a <- lmer(
+  GlobalLearning_z ~ 
+    RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z | oid),
+  data = Data2b, 
+  control = lmerControl(optimizer = "bobyqa"))
+
 summary(m2a)
 round(Confint(m2a), 2)
 drop1(m2a, test = "Chisq")
 vif(m2a)
 
-##### make Fig. 3 part 3
-p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "Global Learning\nPotential"), legend.title = "Rating", 
-                       coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                 "Global Uncertainty" = "scale(Entropy_theta)", 
-                                 "Global\nLearning Potential" = "scale(EIG_theta)",
-                                 "Local\nLearning Potential" = "scale(Entropy_z)"),
+
+
+#### partial r2 - relative contributions ####
+
+m2a.2 <- lmer(
+  GlobalLearning_z ~ 
+    RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z + 
+    (1 | oid),
+  data = Data2b, 
+  control = lmerControl(optimizer = "bobyqa"))
+
+m2a_partr2 <- partR2(m2a.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Data2b, 
+                     max_level = 2)
+m2a_partr2
+
+
+
+##### make Study 2 figure 2 #####
+p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "Global learning\npotential"), legend.title = "Rating", 
+                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
+                                 "Global\nlearning potential" = "EIG_theta_z",
+                                 "Global uncertainty" = "Entropy_theta_z",
+                         "Surprise" = "RPE_MAP_abs_z"),
                        colors = c("#ff0083", "#0015ff"),
                        point.size = 4)+ 
   theme_classic(base_size = 8) + 
   theme(legend.position = "right") + 
-  ylab("") + 
-  xlab("Standardized Coefficient") + 
+  ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
   ggtitle("Study 2b")
 p_panel3
+
+globalrating_partr2 <- m2a_partr2$R2
+
+
+p3 <- plot_partr2(globalrating_partr2) + ggtitle("Global learning potential")
+
+
+p1_relabel <- p1 + ggtitle("Curioisty (from Study 2a)")
+
+combined_fig_s2b <- (p_panel3) / (p1_relabel + p3) + plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+combined_fig_s2b
+
+ggsave("../figures/Study2b_Results.pdf", combined_fig_s2b, width = 6.5, height = 5, units = "in")
+
 
 ######### SI ##########
 
@@ -283,138 +467,160 @@ p_panel3
 # Study 2a
 
 # surprise
-regs1_local <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
-              (scale(RPE_MAP_abs)|oid) ,
-            data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+regs1_local <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+              (RPE_MAP_abs_z|oid) ,
+            data = Data2aLocal, 
             control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs1_local), 2)
 drop1(regs1_local, test = "Chisq")
+r.squaredGLMM(regs1_local)
 
-regs1_global <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs) + 
-              (scale(RPE_MAP_abs)|oid) ,
-            data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
-            control = lmerControl(optimizer = "bobyqa"))
+regs1_global <- lmer(Curiosity_z ~ RPE_MAP_abs_z + 
+                       (RPE_MAP_abs_z|oid) ,
+                     data = Data2aGlobal, 
+                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs1_global), 2)
 drop1(regs1_global, test = "Chisq")
+r.squaredGLMM(regs1_global)
 
-regs1 <- lmer(scale(curiosity) ~ scale(RPE_MAP_abs)*rating_condition + 
-              (scale(RPE_MAP_abs)|oid) ,
-            data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+regs1 <- lmer(Curiosity_z ~ RPE_MAP_abs_z*rating_condition + 
+              (RPE_MAP_abs_z|oid) ,
+            data = Data2a, 
+            control = lmerControl(optimizer = "bobyqa"))
 drop1(regs1, test = "Chisq")
 
 # global uncertainty
-regs2_local <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
-                      (scale(Entropy_theta)|oid) ,
-                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+regs2_local <- lmer(Curiosity_z ~ Entropy_theta_z + 
+                      (Entropy_theta_z|oid) ,
+                    data = Data2aLocal, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs2_local), 2)
 drop1(regs2_local, test = "Chisq")
+r.squaredGLMM(regs2_local)
 
-regs2_global <- lmer(scale(curiosity) ~ scale(Entropy_theta) + 
-                       (scale(Entropy_theta)|oid) ,
-                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+regs2_global <- lmer(Curiosity_z ~ Entropy_theta_z + 
+                       (Entropy_theta_z|oid) ,
+                     data = Data2aGlobal, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs2_global), 2)
 drop1(regs2_global, test = "Chisq")
+r.squaredGLMM(regs2_global)
 
-regs2 <- lmer(scale(curiosity) ~ scale(Entropy_theta)*rating_condition + 
-                (scale(Entropy_theta)|oid) ,
-              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+regs2 <- lmer(Curiosity_z ~ Entropy_theta_z*rating_condition + 
+                (Entropy_theta_z|oid) ,
+              data = Data2a, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs2, test = "Chisq")
 
 # local learning potential
-regs3_local <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
-                      (scale(Entropy_z)|oid) ,
-                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+regs3_local <- lmer(Curiosity_z ~ Entropy_z_z + 
+                      (Entropy_z_z|oid) ,
+                    data = Data2aLocal, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs3_local), 2)
 drop1(regs3_local, test = "Chisq")
+r.squaredGLMM(regs3_local)
 
-regs3_global <- lmer(scale(curiosity) ~ scale(Entropy_z) + 
-                       (scale(Entropy_z)|oid) ,
-                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+regs3_global <- lmer(Curiosity_z ~ Entropy_z_z + 
+                       (Entropy_z_z|oid) ,
+                     data = Data2aGlobal, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs3_global), 2)
 drop1(regs3_global, test = "Chisq")
+r.squaredGLMM(regs3_global)
 
-regs3 <- lmer(scale(curiosity) ~ scale(Entropy_z)*rating_condition + 
-                (scale(Entropy_z)|oid) ,
-              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+
+regs3 <- lmer(Curiosity_z ~ Entropy_z_z*rating_condition + 
+                (Entropy_z_z|oid) ,
+              data = Data2a, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs3, test = "Chisq")
 
 # global learning potential
-regs4_local <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
-                      (scale(EIG_theta)|oid) ,
-                    data = Data2a %>% filter(rating_condition == "Curiosity_Outcome"), 
+regs4_local <- lmer(Curiosity_z ~ EIG_theta_z + 
+                      (EIG_theta_z|oid) ,
+                    data = Data2aLocal, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs4_local), 2)
 drop1(regs4_local, test = "Chisq")
+r.squaredGLMM(regs4_local)
 
-regs4_global <- lmer(scale(curiosity) ~ scale(EIG_theta) + 
-                       (scale(EIG_theta)|oid) ,
-                     data = Data2a %>% filter(rating_condition == "Curiosity_Mine"), 
+regs4_global <- lmer(Curiosity_z ~ EIG_theta_z + 
+                       (EIG_theta_z|oid) ,
+                     data = Data2aGlobal, 
                      control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs4_global), 2)
 drop1(regs4_global, test = "Chisq")
+r.squaredGLMM(regs4_global)
 
-regs4 <- lmer(scale(curiosity) ~ scale(EIG_theta)*rating_condition + 
-                (scale(EIG_theta)|oid) ,
-              data = Data2a, control = lmerControl(optimizer = "bobyqa"))
+regs4 <- lmer(Curiosity_z ~ EIG_theta_z*rating_condition + 
+                (EIG_theta_z|oid) ,
+              data = Data2a, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs4, test = "Chisq")
 
 
 ##### for Study 2b: individual regressions
 
 # surprise
-regs1_learn <- lmer(scale(rating) ~ scale(RPE_MAP_abs) + 
-                      (scale(RPE_MAP_abs)|oid) ,
-                    data = DataFull %>% filter(rating_condition == "GlobalLearn"), 
+regs1_learn <- lmer(GlobalLearning_z ~ RPE_MAP_abs_z + 
+                      (RPE_MAP_abs_z|oid) ,
+                    data = Data2b, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs1_learn), 2)
 drop1(regs1_learn, test = "Chisq")
+r.squaredGLMM(regs1_learn)
 
-regs1 <- lmer(scale(rating) ~ scale(RPE_MAP_abs)*rating_condition + 
-                (scale(RPE_MAP_abs)|oid) ,
-              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+
+regs1 <- lmer(Rating_z ~ RPE_MAP_abs_z*rating_condition + 
+                (RPE_MAP_abs_z|oid) ,
+              data = DataFull, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs1, test = "Chisq")
 
 # global uncertainty
-regs2_learn <- lmer(scale(rating) ~ scale(Entropy_theta) + 
-                      (scale(Entropy_theta)|oid) ,
-                    data = DataFull %>% filter(rating_condition == "GlobalLearn"), 
+regs2_learn <- lmer(GlobalLearning_z ~ Entropy_theta_z + 
+                      (Entropy_theta_z|oid) ,
+                    data = Data2b, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs2_learn), 2)
 drop1(regs2_learn, test = "Chisq")
+r.squaredGLMM(regs2_learn)
 
-regs2 <- lmer(scale(rating) ~ scale(Entropy_theta)*rating_condition + 
-                (scale(Entropy_theta)|oid) ,
-              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+regs2 <- lmer(Rating_z ~ Entropy_theta_z*rating_condition + 
+                (Entropy_theta_z|oid) ,
+              data = DataFull, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs2, test = "Chisq")
 
 # local learning potential
-regs3_learn <- lmer(scale(rating) ~ scale(Entropy_z) + 
-                      (scale(Entropy_z)|oid) ,
-                    data = DataFull %>% filter(rating_condition == "GlobalLearn"),
+regs3_learn <- lmer(GlobalLearning_z ~ Entropy_z_z + 
+                      (Entropy_z_z|oid) ,
+                    data = Data2b, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs3_learn), 2)
 drop1(regs3_learn, test = "Chisq")
+r.squaredGLMM(regs3_learn)
 
-regs3 <- lmer(scale(rating) ~ scale(Entropy_z)*rating_condition + 
-                (scale(Entropy_z)|oid) ,
-              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+regs3 <- lmer(Rating_z ~ Entropy_z_z*rating_condition + 
+                (Entropy_z_z|oid) ,
+              data = DataFull, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs3, test = "Chisq")
 
 # global learning potential
-regs4_learn <- lmer(scale(rating) ~ scale(EIG_theta) + 
-                      (scale(EIG_theta)|oid) ,
-                    data = DataFull %>% filter(rating_condition == "GlobalLearn"),
+regs4_learn <- lmer(GlobalLearning_z ~ EIG_theta_z + 
+                      (EIG_theta_z|oid) ,
+                    data = Data2b, 
                     control = lmerControl(optimizer = "bobyqa"))
 round(Confint(regs4_learn), 2)
 drop1(regs4_learn, test = "Chisq")
+r.squaredGLMM(regs4_learn)
 
-regs4 <- lmer(scale(rating) ~ scale(EIG_theta)*rating_condition + 
-                (scale(EIG_theta)|oid) ,
-              data = DataFull, control = lmerControl(optimizer = "bobyqa"))
+regs4 <- lmer(Rating_z ~ EIG_theta_z*rating_condition + 
+                (EIG_theta_z|oid) ,
+              data = DataFull, 
+              control = lmerControl(optimizer = "bobyqa"))
 drop1(regs4, test = "Chisq")
 
 
@@ -426,7 +632,7 @@ Data2b_by_trial <- Data2b %>% group_by(yoked_participant, trial_num) %>%
   summarize(m_eig_rating = mean(rating))
 
 # merge with curiosity data
-Data2a_local_ratings <- merge(Data2a_local, Data2b_by_trial, 
+Data2a_local_ratings <- merge(Data2aLocal, Data2b_by_trial, 
                               by = c("yoked_participant", "trial_num"), all.x = TRUE)
 
 # filter out trials where there's no matching rating
@@ -470,4 +676,4 @@ summary(m1)
 drop1(m1, test = "Chisq")
 round(Confint(m1), 2)
 
-
+       

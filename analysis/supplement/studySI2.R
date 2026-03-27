@@ -2,7 +2,10 @@ library(tidyverse)
 library(car)
 library(lme4)
 library(jtools)
+library(partR2)
+library(patchwork)
 
+source("../utils.R")
 
 ####### load STUDY 3 KID DATA #####
 
@@ -90,15 +93,42 @@ length(unique(Datas2kids$oid))
 
 length(unique(Datas2adults$oid))
 
+##### standardize everything #####
+Datas2 <- Datas2 %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta)
+  )
+
+Datas2kids <- Datas2kids %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta)
+  )
+
+Datas2adults <- Datas2adults %>%
+  mutate(
+    Curiosity_z = scale(Curiosity),
+    RPE_MAP_abs_z = scale(RPE_MAP_abs),
+    Entropy_theta_z = scale(Entropy_theta),
+    Entropy_z_z = scale(Entropy_z),
+    EIG_theta_z = scale(EIG_theta)
+  )
 
 ######### Main analyses: multiple regression #########
 
 
 ##### kids vs. adults
-m1 <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                 scale(Entropy_z) + scale(EIG_theta))*AgeGroup + 
-             (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                scale(Entropy_z) + scale(EIG_theta)||oid) ,
+m1 <- lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                 Entropy_z_z + EIG_theta_z)*AgeGroup + 
+             (RPE_MAP_abs_z + Entropy_theta_z + 
+                Entropy_z_z + EIG_theta_z||oid) ,
            data = Datas2, control = lmerControl(optimizer = "bobyqa"))
 summary(m1)
 
@@ -108,22 +138,36 @@ drop1(m1, test = "Chisq")
 
 #### follow-up - within kids 
 
-m1a <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                  scale(Entropy_z) + scale(EIG_theta)) + 
-              (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                 scale(Entropy_z) + scale(EIG_theta)||oid) ,
+m1a <- lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                  Entropy_z_z + EIG_theta_z) + 
+              (RPE_MAP_abs_z + Entropy_theta_z + 
+                 Entropy_z_z + EIG_theta_z||oid) ,
             data = Datas2kids, control = lmerControl(optimizer = "bobyqa"))
 summary(m1a)
 
 round(Confint(m1a), 3)
 drop1(m1a, test = "Chisq")
 
+m1a.2 <- lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                    Entropy_z_z + EIG_theta_z) + 
+                (1|oid) ,
+              data = Datas2kids, control = lmerControl(optimizer = "bobyqa"))
+
+m1a_partr2 <- partR2(m1a.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Datas2kids, 
+                     max_level = 2)
+m1a_partr2
+
 
 #### follow-up - within adults
-m1b <- lmer(scale(Curiosity) ~ (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                                  scale(Entropy_z) + scale(EIG_theta)) + 
-              (scale(RPE_MAP_abs) + scale(Entropy_theta) + 
-                 scale(Entropy_z) + scale(EIG_theta)||oid) ,
+m1b <- lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                  Entropy_z_z + EIG_theta_z) + 
+              (RPE_MAP_abs_z + Entropy_theta_z + 
+                 Entropy_z_z + EIG_theta_z||oid) ,
             data = Datas2adults, control = lmerControl(optimizer = "bobyqa"))
 summary(m1b)
 
@@ -131,21 +175,45 @@ round(Confint(m1b), 2)
 drop1(m1b, test = "Chisq")
 
 
-p2 <- plot_summs(m1a, m1b, 
-                 model.names = c("Children", "Adults"), 
-                 legend.title = "Age Group", coefs = c("Surprise" = "scale(RPE_MAP_abs)",
-                                                       "Global Uncertainty" = "scale(Entropy_theta)",
-                                                       "Global\nLearning Potential" = "scale(EIG_theta)",
-                                                       "Local\nLearning Potential" = "scale(Entropy_z)"
-                 ),
-                 colors = c("#e5d200", "#999999"))+ 
-  theme_classic(base_size = 12) + ylab("Model-Estimated Trigger") + 
-  xlab("Standardized Coefficient") +
-  theme(legend.position = "top")
-p2
+m1b.2 <- lmer(Curiosity_z ~ (RPE_MAP_abs_z + Entropy_theta_z + 
+                                    Entropy_z_z + EIG_theta_z) + 
+                (1|oid) ,
+              data = Datas2adults, control = lmerControl(optimizer = "bobyqa"))
 
-setwd("/Users/emilyliquin/Documents/00_Work/Research/03_ESC_RL/ESC_RL/Figures")
-ggsave("SupplementFig4.pdf", p2, height = 3, width = 4, units = "in")
+m1b_partr2 <- partR2(m1b.2,
+                     partvars = c("RPE_MAP_abs_z",
+                                  "Entropy_theta_z",
+                                  "Entropy_z_z",
+                                  "EIG_theta_z"),
+                     data = Datas2adults, 
+                     max_level = 2)
+m1b_partr2
+
+
+regcoefs <- plot_summs(m1b, m1a,
+                 model.names = c("Adults", "Children"), 
+                 legend.title = "Age Group", coefs = c("Local\nLearning Potential" = "Entropy_z_z",
+                                                       "Global\nLearning Potential" = "EIG_theta_z",
+                                                       "Global Uncertainty" = "Entropy_theta_z",
+                                                       "Surprise" = "RPE_MAP_abs_z"),
+                 colors = c( "#999999", "#e5d200"),
+                 point.size = 4)+ 
+  theme_classic(base_size = 8) + ylab("Predictor") + 
+  xlab(expression("Standardized coefficient ("~ beta~")")) + 
+  theme(legend.position = "top")
+regcoefs
+
+kids_partr2 <- m1a_partr2$R2
+adults_partr2 <- m1b_partr2$R2
+
+p1 <- plot_partr2(kids_partr2) + ggtitle("Children")
+p2 <- plot_partr2(adults_partr2) + ggtitle("Adults")
+
+combined_fig_s2 <- regcoefs / (p2 | p1 ) + plot_annotation(tag_levels = 'a')& 
+  theme(plot.tag = element_text(face = "bold", size = 10))
+combined_fig_s2
+
+ggsave("../../figures/StudySI2_Results.pdf", combined_fig_s2, height = 5, width = 6.5, units = "in")
 
 
 
