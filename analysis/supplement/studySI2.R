@@ -198,7 +198,7 @@ regcoefs <- plot_summs(m1b, m1a,
                                                        "Surprise" = "RPE_MAP_abs_z"),
                  colors = c( "#999999", "#e5d200"),
                  point.size = 4)+ 
-  theme_classic(base_size = 8) + ylab("Predictor") + 
+  theme_classic(base_size = 7) + ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
   theme(legend.position = "top")
 regcoefs
@@ -206,11 +206,11 @@ regcoefs
 kids_partr2 <- m1a_partr2$R2
 adults_partr2 <- m1b_partr2$R2
 
-p1 <- plot_partr2(kids_partr2) + ggtitle("Children")
-p2 <- plot_partr2(adults_partr2) + ggtitle("Adults")
+p1 <- plot_partr2_s3(kids_partr2) + ggtitle("Children")
+p2 <- plot_partr2_s3(adults_partr2) + ggtitle("Adults")
 
 combined_fig_s2 <- regcoefs / (p2 | p1 ) + plot_annotation(tag_levels = 'a')& 
-  theme(plot.tag = element_text(face = "bold", size = 10))
+  theme(plot.tag = element_text(face = "bold", size = 8))
 combined_fig_s2
 
 ggsave("../../figures/StudySI2_Results.pdf", combined_fig_s2, height = 5, width = 6.5, units = "in")

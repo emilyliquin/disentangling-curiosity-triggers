@@ -290,7 +290,7 @@ psupp1 <- plot_summs(m3, coefs = c("Local\nlearning potential" = "Entropy_z_z",
                      "Surprise" = "RPE_MAP_abs_z"),
                              colors = c("#0015ff"),
                      point.size = 4) + 
-  theme_classic(base_size = 8) + 
+  theme_classic(base_size = 7) + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
   theme(legend.position = "right")
@@ -307,7 +307,7 @@ psupp2 <- plot_summs(m3b, m3c, m3a, coefs = c("Local\nlearning potential" = "Ent
                                             "Model 2\n(VPI added)",
                                             "Model 3\n(HV added)"),
                      point.size = 4) + 
-  theme_classic(base_size = 8) + 
+  theme_classic(base_size = 7) + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) +
   theme(legend.position = "right")
@@ -319,10 +319,10 @@ p1 <- plot_partr2(partr2_data)
 p1
 
 h_patch <- (free(psupp1) | p1) / psupp2 + plot_annotation(tag_levels = 'a')& 
-  theme(plot.tag = element_text(face = "bold", size = 10))
+  theme(plot.tag = element_text(face = "bold", size = 8))
 h_patch
 
-ggsave("../../figures/StudySI1_Results.pdf", h_patch, width = 6.5, height = 5, units = "in")
+ggsave("../../figures/StudySI1_Results.pdf", h_patch, width = 6, height = 5, units = "in")
 
 
 
@@ -382,10 +382,10 @@ anno$Condition <- factor(anno$Condition, levels = c("Prediction", "Choice"))
 
 choices.S3 <- ggplot(plotdf2, aes(x = mine, y = prop, color = Condition)) +
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge(0.5)) + 
-  ylab("Proportion of Choices") + xlab("Mine") + theme_bw(base_size = 10) + 
+  ylab("Proportion of Choices") + xlab("Mine") + theme_bw(base_size = 7) + 
   facet_wrap(~Condition) + scale_color_brewer(palette = "Set2") + 
   geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab),
-            color = "black", size = 3) +
+            color = "black", size = 2) +
   geom_segment(data = anno, aes(x = x1, xend = x1, 
                                 y = y1, yend = y2),
                colour = "grey30") +
@@ -396,7 +396,7 @@ choices.S3 <- ggplot(plotdf2, aes(x = mine, y = prop, color = Condition)) +
                                 y = y2, yend = y2),
                colour = "grey30") + 
   theme(legend.position = "none",
-        plot.title = element_text(hjust = 0.5, size = 10)) + 
+        plot.title = element_text(hjust = 0.5, size = 7)) + 
   ggtitle("Mine Choices")
 choices.S3
 
@@ -424,10 +424,10 @@ anno2$Condition <- factor(anno2$Condition, levels = c("Prediction", "Choice"))
 
 curioisty.S3 <- ggplot(plotdf, aes(x = chosen_mine_prob, y = curiosity, color = Condition)) +
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge(0.5)) + 
-  ylab("Curiosity") + xlab("Chosen Mine") + theme_bw(base_size = 10) + 
+  ylab("Curiosity") + xlab("Chosen Mine") + theme_bw(base_size = 7) + 
   facet_wrap(~Condition) + scale_color_brewer(palette = "Set2") + 
   geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab),
-            color = "black", size = 3) +
+            color = "black", size = 2) +
   geom_segment(data = anno2, aes(x = x1, xend = x1, 
                                  y = y1, yend = y2),
                colour = "grey30") +
@@ -438,7 +438,7 @@ curioisty.S3 <- ggplot(plotdf, aes(x = chosen_mine_prob, y = curiosity, color = 
                                  y = y2, yend = y2),
                colour = "grey30") + 
   theme(legend.position = "none",
-        plot.title = element_text(hjust = 0.5, size = 10)) + 
+        plot.title = element_text(hjust = 0.5, size = 7)) + 
   ggtitle("Curiosity") + coord_cartesian(ylim = c(45, 70))
 curioisty.S3
 
@@ -450,6 +450,7 @@ mat <- rbind(c(1, 2))
 fullplot <- grid.arrange(curioisty.S3,choices.S3, layout_matrix = mat)
 fullplot
 
+ggsave("../../figures/StudySI1_Results2.pdf", fullplot, width = 6, height = 3.5, units = "in")
 
 
 ###### 3. Multinomial logistic regression 

@@ -265,7 +265,7 @@ m1b <- lmer(
   control = lmerControl(optimizer = "bobyqa")
 )
 summary(m1b)
-round(Confint(m1b), 2)
+round(Confint(m1b), 3)
 drop1(m1b, test = "Chisq")
 vif(m1b)
 
@@ -294,19 +294,21 @@ m1b_partr2
 ##### make Study 2 figure 1 #####
 
 p_panel2 <- plot_summs(m1b, m1a, model.names = c("Mine (global)", "Outcome (local)"), legend.title = "Target of curiosity", 
-                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
-                                 "Global uncertainty" = "Entropy_theta_z", 
-                                 "Global\nlearning potential" = "EIG_theta_z",
+                       coefs = c("Local LP" = "Entropy_z_z",
+                                 "Global LP" = "EIG_theta_z",
+                                 "Global\nuncertainty" = "Entropy_theta_z", 
                                  "Surprise" = "RPE_MAP_abs_z"
                                  ),
                        colors = c("#17d898", "#ff0083"),
                        point.size = 4)+ 
-  theme_classic(base_size = 8) + 
-  theme(legend.position = "right") + 
+  theme_classic(base_size = 7) + 
+  theme(legend.position = c(0.84,0.18),
+        plot.tag = element_text(face = "bold")) + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
-  ggtitle("Study 2a")
+  ggtitle("Study 2a")+ 
+  labs(tag = "d")
 
 p_panel2
 
@@ -317,20 +319,13 @@ local_partr2 <- m1a_partr2$R2
 global_partr2 <- m1b_partr2$R2
 
 
-p1 <- plot_partr2(local_partr2) + ggtitle("Curiosity about outcome (local)")
+p1_2 <- plot_partr2(local_partr2) + ggtitle("Curiosity about outcome (local)")+ 
+  labs(tag = "f") + theme(plot.tag = element_text(face = "bold"))
 
-p2 <- plot_partr2(global_partr2) + ggtitle("Curiosity about mine (global)")
-
-
-
-library(patchwork)
+p2_2 <- plot_partr2(global_partr2) + ggtitle("Curiosity about mine (global)")+ 
+  labs(tag = "e") + theme(plot.tag = element_text(face = "bold"))
 
 
-combined_fig_s2a <- p_panel2 / (p2 | p1) + plot_annotation(tag_levels = 'a')& 
-  theme(plot.tag = element_text(face = "bold", size = 10))
-combined_fig_s2a
-
-ggsave("../figures/Study2a_Results.pdf", combined_fig_s2a, width = 6.5, height = 5, units = "in")
 
 
 ######### study 2b #######
@@ -427,33 +422,90 @@ m2a_partr2
 
 ##### make Study 2 figure 2 #####
 p_panel3 <- plot_summs(m1a, m2a, model.names = c("Curiosity\n(from Study 2a)", "Global learning\npotential"), legend.title = "Rating", 
-                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
-                                 "Global\nlearning potential" = "EIG_theta_z",
-                                 "Global uncertainty" = "Entropy_theta_z",
+                       coefs = c("Local LP" = "Entropy_z_z",
+                                 "Global LP" = "EIG_theta_z",
+                                 "Global\nuncertainty" = "Entropy_theta_z",
                          "Surprise" = "RPE_MAP_abs_z"),
                        colors = c("#ff0083", "#0015ff"),
                        point.size = 4)+ 
-  theme_classic(base_size = 8) + 
-  theme(legend.position = "right") + 
+  theme_classic(base_size = 7) + 
+  theme(legend.position = c(0.84,0.18),
+        plot.tag = element_text(face = "bold")) + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
-  ggtitle("Study 2b")
+  ggtitle("Study 2b") + 
+  labs(tag = "g") 
 p_panel3
 
 globalrating_partr2 <- m2a_partr2$R2
 
+p3 <- plot_partr2(globalrating_partr2) + ggtitle("Global learning potential")+ 
+  labs(tag = "h") + theme(plot.tag = element_text(face = "bold")) 
 
-p3 <- plot_partr2(globalrating_partr2) + ggtitle("Global learning potential")
+
+# layout <- "
+# AAAAAAABB
+# AAAAAAABB
+# AAAAAAACC
+# AAAAAAACC
+# #########
+# DDDDDDDEE
+# DDDDDDDEE
+# DDDDDDDFF
+# DDDDDDDFF
+# #########
+# GGGGGGGHH
+# GGGGGGGHH
+# GGGGGGG##
+# GGGGGGG##
+# "
+# 
+# # note - p_panel1, p1, and p2 are from study 1 script -- this won't work unless you run that script first
+# 
+# library(patchwork)
+# finalfig <- free(p_panel1) + p1 + p2 +
+#   free(p_panel2) + p2_2 + p1_2+
+#   free(p_panel3) + p3 +
+#   plot_layout(design = layout) + plot_annotation(tag_levels = 'a')&
+#   theme(plot.tag = element_text(face = "bold", size = 8))
+# finalfig
 
 
-p1_relabel <- p1 + ggtitle("Curioisty (from Study 2a)")
+library(gridExtra)
+finalfig <- grid.arrange(p_panel1, p1, p2,
+             p_panel2, p2_2, p1_2, 
+             p_panel3, p3,
+             layout_matrix = rbind(c(rep(1, 3), rep(2, 2)),
+                                   c(rep(1, 3), rep(2, 2)),
+                                   c(rep(1, 3), rep(2, 2)),
+                                   c(rep(1, 3), rep(2, 2)),
+                                   c(rep(1, 3), rep(3, 2)),
+                                   c(rep(1, 3), rep(3, 2)),
+                                   c(rep(1, 3), rep(3, 2)),
+                                   c(rep(1, 3), rep(3, 2)),
+                                   c(rep(NA, 5)),
+                                   c(rep(4, 3), rep(5, 2)),
+                                   c(rep(4, 3), rep(5, 2)),
+                                   c(rep(4, 3), rep(5, 2)),
+                                   c(rep(4, 3), rep(5, 2)),
+                                   c(rep(4, 3), rep(6, 2)),
+                                   c(rep(4, 3), rep(6, 2)),
+                                   c(rep(4, 3), rep(6, 2)),
+                                   c(rep(4, 3), rep(6, 2)),
+                                   c(rep(NA, 5)),
+                                   c(rep(7, 3), rep(8, 2)),
+                                   c(rep(7, 3), rep(8, 2)),
+                                   c(rep(7, 3), rep(8, 2)),
+                                   c(rep(7, 3), rep(8, 2)),
+                                   c(rep(7, 3), rep(NA, 2)),
+                                   c(rep(7, 3), rep(NA, 2)),
+                                   c(rep(7, 3), rep(NA, 2)),
+                                   c(rep(7, 3), rep(NA, 2))))
 
-combined_fig_s2b <- (p_panel3) / (p1_relabel + p3) + plot_annotation(tag_levels = 'a')& 
-  theme(plot.tag = element_text(face = "bold", size = 10))
-combined_fig_s2b
+# 
+ggsave("../figures/Fig_S1S2_Combined.pdf", finalfig, width = 18, height = 22, units = "cm")
 
-ggsave("../figures/Study2b_Results.pdf", combined_fig_s2b, width = 6.5, height = 5, units = "in")
 
 
 ######### SI ##########

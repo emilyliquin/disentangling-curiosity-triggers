@@ -249,13 +249,13 @@ drop1(m2, test = "Chisq")
 
 # generate figure, study 3
 p_panel4 <- plot_summs(m1b, m1a, model.names = c("Adults", "Children"), legend.title = "Age Group", 
-                       coefs = c("Local\nlearning potential" = "Entropy_z_z",
-                                 "Global\nlearning potential" = "EIG_theta_z",
-                                 "Global uncertainty" = "Entropy_theta_z",
+                       coefs = c("Local LP" = "Entropy_z_z",
+                                 "Global LP" = "EIG_theta_z",
+                                 "Global\nuncertainty" = "Entropy_theta_z",
                                  "Surprise" = "RPE_MAP_abs_z"),
                        colors = c("#999999", "#e5d200"),
                        point.size = 4) + 
-  theme_classic(base_size = 8) + 
+  theme_classic(base_size = 7) + 
   theme(legend.position = "right") + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
@@ -266,17 +266,23 @@ p_panel4
 kids_partr2 <- m1a_partr2$R2
 adults_partr2 <- m1b_partr2$R2
 
-p1 <- plot_partr2(kids_partr2) + ggtitle("Children")
-p2 <- plot_partr2(adults_partr2) + ggtitle("Adults")
+p1 <- plot_partr2_s3(kids_partr2) + ggtitle("Children")
+p2 <- plot_partr2_s3(adults_partr2) + ggtitle("Adults")
 
 
+layout <- "
+AA
+AA
+BC
+"
 
-
-combined_fig_s2 <- p_panel4 / (p2 | p1 ) + plot_annotation(tag_levels = 'a')& 
+combined_fig_s2 <- p_panel4 + p2 + p1 + 
+  plot_layout(design = layout) + 
+  plot_annotation(tag_levels = 'a')& 
   theme(plot.tag = element_text(face = "bold", size = 10))
 combined_fig_s2
 
-ggsave("../figures/Study3_Results.pdf", combined_fig_s2, width = 6.5, height = 5, units = "in")
+ggsave("../figures/Study3_Results.pdf", combined_fig_s2, width = 11, height = 11, units = "cm")
 
 
 
@@ -338,13 +344,16 @@ fig2 <- ggplot() +
                                             y = animal_choice_num, 
                                             color = AgeGroup),
               height = 0.05, width = 0.2, alpha = 0.5) +
-  theme_classic(base_size = 10) + 
+  theme_classic(base_size = 7) + 
   xlab("Curiosity Difference Between Q1 and Q2") +
   ylab("P(Choosing To Learn about Q1)") +
   scale_color_manual(values = c("#e5d200", "#999999")) + 
   scale_fill_manual(values = c("#e5d200", "#999999"))
 
 fig2
+
+ggsave("../figures/Study3_SI_FigS1.pdf", fig2, width = 11, height = 9, units = "cm")
+
 
 ######## 1. Control for differences in learning ####
 
@@ -391,7 +400,7 @@ p1 <- ggplot(means, aes(x = AgeGroup, y = Av_guess_error, color = AgeGroup)) +
   geom_hline(yintercept = 0) + 
   stat_summary(fun.data = "mean_cl_boot")+
   geom_quasirandom(alpha = 0.3) + 
-  theme_classic(base_size = 10)+ 
+  theme_classic(base_size = 7)+ 
   scale_color_manual(values = c("#e5d200", "#999999")) +
   xlab("Age Group") + ylab("Learning Error") + theme(legend.position = "none")
 p1  
@@ -400,7 +409,7 @@ p2 <- ggplot(means, aes(x = AgeGroup, y = Av_abs_guess_error, color = AgeGroup))
   geom_hline(yintercept = 0) + 
   stat_summary(fun.data = "mean_cl_boot")+
   geom_quasirandom(alpha = 0.3) + 
-  theme_classic(base_size = 10) +
+  theme_classic(base_size = 7) +
   scale_color_manual(values = c("#e5d200", "#999999")) +
   xlab("Age Group") + ylab("Learning Noise") + theme(legend.position = "none")
 p2 
@@ -446,6 +455,7 @@ Confint(mguessb)
 
 ##### control for learning noise in analysis of triggers
 
+Data3$AgeGroup <- factor(Data3$AgeGroup, levels = c("Children", "Adults"))
 m <- lmer(Curiosity_z ~ 
             (RPE_MAP_abs_z +
                Entropy_theta_z +
@@ -465,11 +475,28 @@ Confint(m)
 drop1(m, test = "Chisq")
 
 #### figure S2, bottom
-plot_model(m, terms = c("Entropy_z_z", "AgeGroup", "Av_abs_guess_error"), 
+
+facet_names <- c(
+  'Av_abs_guess_error = 0.14'="Learning Noise = 0.14",
+  'Av_abs_guess_error = 0.22'="Learning Noise = 0.22",
+  'Av_abs_guess_error = 0.31'="Learning Noise = 0.31"
+)
+
+bottomplot <- plot_model(m, terms = c("Entropy_z_z", "AgeGroup", "Av_abs_guess_error"), 
                    type = "pred") + 
-  theme_classic(base_size = 10) + 
+  theme_classic(base_size = 7) + 
   scale_color_manual(values = c("#e5d200", "#999999")) +
-  scale_fill_manual(values = c("#e5d200", "#999999")) 
+  scale_fill_manual(values = c("#e5d200", "#999999")) + 
+  xlab("Local Learning Potential") + 
+  ylab ("Curiosity (Predicted)") + ggtitle("") +
+  facet_grid(.~ facet, labeller = labeller(facet = facet_names)) + 
+  labs(color = "Age Group") 
+bottomplot
+
+s2 <- (p1+p2)/bottomplot + plot_layout(guides = "collect")
+s2
+
+ggsave("../figures/Study3_SI_FigS2.pdf", s2, width = 18, height = 13, units = "cm")
 
 
 ######### SI ##########
@@ -632,9 +659,11 @@ p_supp_ordinal <- plot_summs(adult_mod, kid_mod, model.names = c("Adults", "Chil
                                  "Surprise" = "RPE_MAP_abs_z"),
                        colors = c("#999999", "#e5d200"),
                        point.size = 4) + 
-  theme_classic(base_size = 10) + 
+  theme_classic(base_size = 7) + 
   theme(legend.position = "right") + 
   ylab("Predictor") + 
   xlab(expression("Regression coefficient (log odds)"))
 p_supp_ordinal
+
+ggsave("../figures/Study3_SI_FigS3.pdf", p_supp_ordinal, width = 11, height = 8, units = "cm")
 

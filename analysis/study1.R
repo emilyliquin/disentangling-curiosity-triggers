@@ -260,19 +260,22 @@ m2a_partr2
 ##### make Figure for Study 1 ######
 p_panel1 <- plot_summs(m1, m2, 
                        model.names = c("1a (yoked choice)", "1b (free choice)"), 
-                       legend.title = "Study", coefs = c("Local\nlearning potential" = "Entropy_z_z",
-                                                         "Global\nlearning potential" = "EIG_theta_z",
-                                                         "Global uncertainty" = "Entropy_theta_z",
+                       legend.title = "Study", coefs = c("Local LP" = "Entropy_z_z",
+                                                         "Global LP" = "EIG_theta_z",
+                                                         "Global\nuncertainty" = "Entropy_theta_z",
                                                          "Surprise" = "RPE_MAP_abs_z"
                                                          ),
                        colors = c("#49b7fc", "#ff7b00"),
                        point.size = 4)+ 
-  theme_classic(base_size = 8) + 
-  theme(legend.position = "right") + 
+  theme_classic(base_size = 7) + 
+  theme(legend.position = c(0.84,0.18),
+        plot.title = element_text(size = rel(1)),
+        plot.tag = element_text(face = "bold")) + 
   ylab("Predictor") + 
   xlab(expression("Standardized coefficient ("~ beta~")")) + 
   coord_cartesian(xlim = c(-0.6, 0.9)) + 
-  ggtitle("Study 1") 
+  ggtitle("Study 1") + 
+  labs(tag = "a")
 p_panel1
 
 
@@ -282,18 +285,14 @@ s1a_partr2 <- m1a_partr2$R2
 s1b_partr2 <- m2a_partr2$R2
 
 
-p1 <- plot_partr2(s1a_partr2) + ggtitle("Study 1a (yoked choice)")
-
-p2 <- plot_partr2(s1b_partr2) + ggtitle("Study 1b (free choice)")
-
+p1 <- plot_partr2(s1a_partr2) + ggtitle("Study 1a (yoked choice)") + 
+  labs(tag = "b") + theme(plot.tag = element_text(face = "bold"))
 
 
-library(patchwork)
-combined_fig_s1 <- p_panel1 / (p1 | p2)+ plot_annotation(tag_levels = 'a')& 
-  theme(plot.tag = element_text(face = "bold", size = 10))
-combined_fig_s1
+p2 <- plot_partr2(s1b_partr2) + ggtitle("Study 1b (free choice)") + 
+  labs(tag = "c") + theme(plot.tag = element_text(face = "bold"))
 
-ggsave("../figures/Study1_Results.pdf", combined_fig_s1, width = 6.5, height = 5, units = "in")
+
 
 
 ##### methods: sensitivity analysis for power #####
