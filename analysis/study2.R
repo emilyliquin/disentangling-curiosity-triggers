@@ -68,11 +68,13 @@ Data2a <- Data2a %>%
 demographics_s2a <- Data2a %>% group_by(oid) %>%
   summarize(age = age[1],
             gender = gender[1],
-            condition = agent_condition[1])
+            condition = agent_condition[1],
+            rating_condition = rating_condition[1])
 
 summary(demographics_s2a$age)
 table(demographics_s2a$gender)
 summary(demographics_s2a$condition)
+summary(demographics_s2a$rating_condition)
 
 
 ###### LOAD STUDY 2b DATA #####

@@ -348,9 +348,6 @@ by_part
 
 
 
-
-
-
 wilcox.test(prop80~task_condition, data = by_part) #prediction: difference in means (choice - pred) is greater than zero
 wilcox_effsize(data.frame(by_part), prop80~task_condition)
 
@@ -359,6 +356,52 @@ wilcox_effsize(data.frame(by_part), prop65~task_condition)
 
 wilcox.test(prop20~task_condition, data = by_part) #prediction: difference in means (choice - pred) is less than zero
 wilcox_effsize(data.frame(by_part), prop20~task_condition)
+
+
+####### 2. We will conduct Wilcoxon signed-rank tests for the following 
+# within-condition comparisons...
+
+# reshape data to long
+Lbypart <- by_part %>% pivot_longer(prop80:prop20,
+                                    names_to = "mine",
+                                    values_to = "prop")
+# make choice comparison datasets
+LbypartC <- subset(Lbypart, Lbypart$task_condition == "Choice")
+LbypartC_6520 <- LbypartC[LbypartC$mine != "prop80",]
+LbypartC_8020 <- LbypartC[LbypartC$mine != "prop65",]
+
+
+####### a. Within CC: 20% mine choices vs. 80% mine choices. Prediction: more 80%.
+
+LbypartC_8020$mine <- factor(LbypartC_8020$mine, levels = c("prop80", "prop20"))
+
+wilcox.test(prop~mine, data = LbypartC_8020, paired = TRUE, alternative = "greater") # choice: more 80 over 20 choices
+
+
+####### b. Within CC: 20% mine choices vs. 65% mine choices. Prediction: more 65%.
+
+LbypartC_6520$mine <- factor(LbypartC_6520$mine, levels = c("prop65", "prop20"))
+
+wilcox.test(prop~mine, data = LbypartC_6520, paired = TRUE, alternative = "greater") # choice: more 65 over 20 choices
+
+
+####### c.Within PC: 65% mine choices vs. 20% mine choices. Prediction: more 65%.
+
+#prediction comparison datasets
+LbypartP <- subset(Lbypart, Lbypart$task_condition == "Prediction")
+LbypartP_6520 <- LbypartP[LbypartP$mine != "prop80",]
+LbypartP_6580 <- LbypartP[LbypartP$mine != "prop20",]
+
+LbypartP_6520$mine <- factor(LbypartP_6520$mine, levels = c("prop65", "prop20"))
+
+wilcox.test(prop~mine, data = LbypartP_6520, paired = TRUE, alternative = "greater") #prediction: more 65 over 20 choices
+
+
+####### d. Within PC: 65% mine choices vs. 80% mine choices. Prediction: more 65%.
+
+LbypartP_6580$mine <- factor(LbypartP_6580$mine, levels = c("prop65", "prop80"))
+
+wilcox.test(prop~mine, data = LbypartP_6580, paired = TRUE, alternative = "greater") #prediction: more 65 over 80 choices
 
 
 
@@ -371,12 +414,6 @@ plotdf2 <- by_part %>% pivot_longer(`80%`:`20%`,
                                     names_to = "mine",
                                     values_to = "prop")
 
-anno <- data.frame(x1 = c(1, 1, 1, 2), x2 = c(2, 3, 2, 3), 
-                   y1 = c(0.46, 0.49, 0.38, 0.41), y2 = c(0.47, 0.50, 0.39, 0.42), 
-                   xstar = c(1.5, 2, 1.5, 2.5), ystar = c(0.485, 0.515, 0.405, 0.435),
-                   lab = c("***", "***", "*", "ns"),
-                   Condition = c("Choice", "Choice", "Prediction", "Prediction"))
-
 plotdf2$Condition <- relevel(plotdf2$Condition, ref = "Prediction")
 anno$Condition <- factor(anno$Condition, levels = c("Prediction", "Choice"))
 
@@ -384,17 +421,6 @@ choices.S3 <- ggplot(plotdf2, aes(x = mine, y = prop, color = Condition)) +
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge(0.5)) + 
   ylab("Proportion of Choices") + xlab("Mine") + theme_bw(base_size = 7) + 
   facet_wrap(~Condition) + scale_color_brewer(palette = "Set2") + 
-  geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab),
-            color = "black", size = 2) +
-  geom_segment(data = anno, aes(x = x1, xend = x1, 
-                                y = y1, yend = y2),
-               colour = "grey30") +
-  geom_segment(data = anno, aes(x = x2, xend = x2, 
-                                y = y1, yend = y2),
-               colour = "grey30") +
-  geom_segment(data = anno, aes(x = x1, xend = x2, 
-                                y = y2, yend = y2),
-               colour = "grey30") + 
   theme(legend.position = "none",
         plot.title = element_text(hjust = 0.5, size = 7)) + 
   ggtitle("Mine Choices")
@@ -412,12 +438,6 @@ plotdf$chosen_mine_prob <- fct_recode(plotdf$chosen_mine_prob,
                                       "65%" = "0.65",
                                       "80%" = "0.8")
 
-anno2 <- data.frame(x1 = c(1, 1, 1, 2), x2 = c(2, 3, 2, 3), 
-                    y1 = c(58, 61, 62, 63.5), y2 = c(58.5, 61.5, 62.5, 64), 
-                    xstar = c(1.5, 2, 1.5, 2.5), ystar = c(60, 63, 64, 65.5),
-                    lab = c("**", "ns", "***", "ns"),
-                    Condition = c("Choice", "Choice", "Prediction", "Prediction"))
-
 plotdf$Condition <- relevel(plotdf$Condition, ref = "Prediction")
 anno2$Condition <- factor(anno2$Condition, levels = c("Prediction", "Choice"))
 
@@ -426,17 +446,6 @@ curioisty.S3 <- ggplot(plotdf, aes(x = chosen_mine_prob, y = curiosity, color = 
   stat_summary(fun.data = "mean_cl_boot", position = position_dodge(0.5)) + 
   ylab("Curiosity") + xlab("Chosen Mine") + theme_bw(base_size = 7) + 
   facet_wrap(~Condition) + scale_color_brewer(palette = "Set2") + 
-  geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab),
-            color = "black", size = 2) +
-  geom_segment(data = anno2, aes(x = x1, xend = x1, 
-                                 y = y1, yend = y2),
-               colour = "grey30") +
-  geom_segment(data = anno2, aes(x = x2, xend = x2, 
-                                 y = y1, yend = y2),
-               colour = "grey30") +
-  geom_segment(data = anno2, aes(x = x1, xend = x2, 
-                                 y = y2, yend = y2),
-               colour = "grey30") + 
   theme(legend.position = "none",
         plot.title = element_text(hjust = 0.5, size = 7)) + 
   ggtitle("Curiosity") + coord_cartesian(ylim = c(45, 70))

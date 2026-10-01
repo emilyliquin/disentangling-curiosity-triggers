@@ -17,6 +17,50 @@ source("utils.R")
 
 Data3kids <- read_csv("../model_results/study3_kids.csv")
 
+####### load STUDY 3 ADULT DATA #####
+
+Data3adults <- read_csv("../model_results/study3_adults.csv")
+
+
+##### check for systematic variation in exclusions for not understanding rating scale ####
+
+Kids_ByID <- Data3kids %>% 
+  group_by(oid, AgeYr, AgeMonth, MaxMinInclude) %>%
+  summarize()
+
+
+Adults_ByID <- Data3adults %>% 
+  group_by(oid, MaxMinInclude) %>%
+  summarize()
+
+# make sure ID numbers are distinct
+Adults_ByID$oid <- as.factor(as.numeric(as.character(Adults_ByID$oid)) + 1000)
+Kids_ByID$oid <- as.factor(Kids_ByID$oid)
+
+Adults_ByID$AgeYr <- NA
+Adults_ByID$AgeMonth <- NA
+Adults_ByID$AgeGroup <- "Adults"
+Kids_ByID$AgeGroup <- "Children"
+
+alldat_ByID <- rbind(Adults_ByID, Kids_ByID)
+
+alldat_ByID$MaxMinExclude <- ifelse(alldat_ByID$MaxMinInclude == 1, 0, 1)
+Kids_ByID$MaxMinExclude <- ifelse(Kids_ByID$MaxMinInclude == 1, 0, 1)
+
+mexcl_a <- glm(MaxMinExclude ~ AgeGroup, data = alldat_ByID, family = "binomial")
+summary(mexcl_a)
+round(exp(Confint(mexcl_a)), 2)
+drop1(mexcl_a, test = "Chisq")
+
+mexcl_b <- glm(MaxMinExclude ~ scale(AgeMonth), data = Kids_ByID, family = "binomial")
+summary(mexcl_b)
+round(exp(Confint(mexcl_b)), 2)
+drop1(mexcl_b, test = "Chisq")
+
+table(Kids_ByID$AgeYr, Kids_ByID$MaxMinExclude)
+18/(18+36)
+6/(6+32)
+
 ##### remove excluded participants
 
 # incorrect answers to attn checks
@@ -28,7 +72,6 @@ to_exclude <- Data3kids %>% group_by(oid) %>%
   filter(same_rating == TRUE)
 
 Data3kids <- Data3kids %>% filter(!(oid %in% to_exclude$oid))
-
 
 # surprise = unsigned reward prediction error (absolute value)
 Data3kids$RPE_MAP_abs <- abs(Data3kids$RPE_MAP)
@@ -43,9 +86,6 @@ Data3kids <- Data3kids %>%
          feedback = as.factor(feedback),
          subj_choice = as.factor(subj_choice))
 
-####### load STUDY 3 ADULT DATA #####
-
-Data3adults <- read_csv("../model_results/study3_adults.csv")
 
 ##### remove excluded participants
 
@@ -354,6 +394,197 @@ fig2
 
 ggsave("../figures/Study3_SI_FigS1.pdf", fig2, width = 11, height = 9, units = "cm")
 
+##### simulate adding measurement noise to adults ####
+
+#### get true effects for interactions
+m1a <- lmer(
+  Curiosity_z ~ 
+    (RPE_MAP_abs_z +
+    Entropy_theta_z +
+    Entropy_z_z + 
+    EIG_theta_z)*AgeGroup + 
+    (RPE_MAP_abs_z +
+       Entropy_theta_z +
+       Entropy_z_z + 
+       EIG_theta_z || oid),
+  data = Data3, control = lmerControl(optimizer = "bobyqa"))
+summary(m1a)
+true_interaction_effects <- fixef(m1a)
+
+#### get true effects for validity
+m3a <- glm(animal_choice ~ ed_curiosity_diff, data = df_full %>% filter(AgeGroup == "Children"), family = "binomial")
+summary(m3a)
+true_kid_validity <- exp(coef(m3a))[2]
+
+
+m3b <- glm(animal_choice ~ ed_curiosity_diff, data = df_full %>% filter(AgeGroup == "Adults"), family = "binomial")
+summary(m3b)
+true_adult_validity <- exp(coef(m3b))[2]
+
+
+###### simulate adding noise
+random_amounts <- seq(0.1, 0.8, by = 0.1)
+nsim <- 5000
+
+simulation_output <- data.frame(sim_rpe_int = numeric(),
+                                sim_ent.theta_int = numeric(),
+                                sim_ent.z_int = numeric(),
+                                sim_eig.theta_int = numeric(),
+                                noise.level = numeric(),
+                                noisy.validity = numeric())
+set.seed(13423)
+for(p_error in random_amounts){
+  
+  # place to store results
+  int_RPE <- c()
+  int_Ent_theta <- c()
+  int_Ent_z <- c()
+  int_EIG_theta <- c()
+  validity_ORs <- c()
+  
+  for(i in 1:nsim){
+    print(paste0("sim ", i, " of 5000 at error level ", p_error))
+    # copy adult dataframe
+    Data_adults_sim <- Data3adults
+    # select which curiosity measurements to randomly change, proportion determined by p_error
+    n_change <- rep(TRUE, round(p_error*length(Data_adults_sim$Curiosity)))
+    n_nochange <- rep(FALSE, length(Data_adults_sim$Curiosity) - length(n_change))
+    change <- sample(c(n_change, n_nochange))
+    
+    # change those to a random rating 1:4
+    Data_adults_sim$Curiosity[change] <- sample(1:4, sum(change), replace = TRUE)
+    
+    # combine original and noisy data
+    Data_adults_sim$DataType <- "Simulated"
+    Data3adults$DataType <- "Real"
+    Data_adults_sim$oid <- as.factor(as.numeric(as.character(Data_adults_sim$oid)) + 2000) # unique IDs
+    Data_combine <- rbind(Data_adults_sim, Data3adults)
+    
+    # scale w/ new curiosity ratings
+    Data_combine$Curiosity_z <- as.vector(scale(Data_combine$Curiosity))
+    
+    # get interaction terms
+    m1b <- lmer(
+      Curiosity_z ~ 
+        (scale(RPE_MAP_abs) +
+           scale(Entropy_theta) +
+           scale(Entropy_z) + 
+           scale(EIG_theta))*DataType + 
+        (scale(RPE_MAP_abs) +
+           scale(Entropy_theta) +
+           scale(Entropy_z) + 
+           scale(EIG_theta) || oid),
+      data = Data_combine, control = lmerControl(optimizer = "bobyqa"))
+    summary(m1b)
+    fixef_output <- fixef(m1b)
+    
+    
+    int_RPE <- c(int_RPE, fixef_output[7])
+    int_Ent_theta <- c(int_Ent_theta, fixef_output[8])
+    int_Ent_z <- c(int_Ent_z, fixef_output[9])
+    int_EIG_theta <- c(int_EIG_theta, fixef_output[10])
+
+    ### get predictive validity 
+    # copy validity data
+    Data_adults_sim_w <- Data3adults %>% group_by(oid, AgeGroup) %>%
+      summarize(echidna_curiosity = echidna_curiosity[1],
+                dog_curiosity = dog_curiosity[1],
+                animal_choice = animal_choice[1],
+                .groups = "drop")
+    
+    # randomly permute p_error ratings
+    all_validity_ratings <- c(Data_adults_sim_w$echidna_curiosity, Data_adults_sim_w$dog_curiosity)
+
+    # select which curiosity measurements to randomly change, proportion determined by p_error
+    n_change <- rep(TRUE, round(p_error*length(all_validity_ratings)))
+    n_nochange <- rep(FALSE, length(all_validity_ratings) - length(n_change))
+    change <- sample(c(n_change, n_nochange))
+    
+    all_validity_ratings[change] <- sample(1:4, sum(change), replace = TRUE)
+    Data_adults_sim_w$echidna_curiosity <- all_validity_ratings[1:(length(all_validity_ratings)/2)]
+    Data_adults_sim_w$dog_curiosity <- all_validity_ratings[(length(all_validity_ratings)/2 + 1):length(all_validity_ratings)]
+    
+    # clean diff scores and choices
+    Data_adults_sim_w$ed_curiosity_diff <- Data_adults_sim_w$echidna_curiosity - Data_adults_sim_w$dog_curiosity
+    Data_adults_sim_w$animal_choice <- as.factor(Data_adults_sim_w$animal_choice)
+    
+    # fit model
+    m4 <- glm(animal_choice ~ ed_curiosity_diff,
+              data = Data_adults_sim_w, family = "binomial")
+    summary(m4)
+    validity_ORs <- c(validity_ORs, exp(coef(m4))[2])
+  }
+  
+  this_out <- data.frame(sim_rpe_int = int_RPE,
+                         sim_ent.theta_int = int_Ent_theta,
+                         sim_ent.z_int = int_Ent_z,
+                         sim_eig.theta_int = int_EIG_theta,
+                         noiselevel = rep(p_error, nsim),
+                         noisyvalidity = validity_ORs)
+  
+  simulation_output <- rbind(simulation_output, this_out)
+}
+
+# add true interactions to simulation output
+simulation_output$true_rpe_int <- true_interaction_effects[7]
+simulation_output$true_ent.theta_int <- true_interaction_effects[8]
+simulation_output$true_ent.z_int <- true_interaction_effects[9]
+simulation_output$true_eig.theta_int <- true_interaction_effects[10]
+
+
+# reshape
+simulation_output_l <- simulation_output %>%
+  pivot_longer(c(sim_rpe_int:sim_eig.theta_int),
+               names_sep = "_",
+               names_to = c("type", "term", NA),
+               values_to = "int")
+simulation_output_l$true_int <- case_when(simulation_output_l$term == "rpe" ~ simulation_output_l$true_rpe_int,
+                                          simulation_output_l$term == "ent.theta" ~ simulation_output_l$true_ent.theta_int,
+                                          simulation_output_l$term == "ent.z" ~ simulation_output_l$true_ent.z_int,
+                                          simulation_output_l$term == "eig.theta" ~ simulation_output_l$true_eig.theta_int)
+
+
+library(geomtextpath)
+
+simulation_output$true_kid_validity <- true_kid_validity
+
+new_labels <- c("eig.theta" = "Global LP", 
+                "ent.theta" = "Global uncertainty", 
+                "ent.z" = "Local LP",
+                "rpe" = "Surprise")
+
+simulation_output_l$term <- factor(simulation_output_l$term,
+                                   levels = c("ent.z", "eig.theta",
+                                              "ent.theta", "rpe"))
+psim_1 <- ggplot(simulation_output_l, aes(x = noiselevel, y = int, group = noiselevel)) + 
+  stat_summary(fun.data = median_hilow, fun.args = list(conf.int = 0.95)) +
+  geom_hline(aes(yintercept = true_int, color = "true interaction,\nchildren vs. adults", 
+                 linetype = "true interaction,\nchildren vs. adults")) +
+  theme_classic(base_size = 7) + 
+  facet_grid(~term, labeller = as_labeller(new_labels)) +
+  scale_color_manual(name = " ", values = c("true interaction,\nchildren vs. adults" = "red")) + 
+  scale_linetype_manual(name = " ", values = c("true interaction,\nchildren vs. adults" = 2)) + 
+  ylab("Interaction term") + 
+  xlab("Noise level")+
+  theme(legend.position = "bottom")
+
+
+psim_2 <- ggplot(simulation_output, aes(x = noiselevel, y = noisyvalidity, group = noiselevel)) + 
+  stat_summary(fun.data = median_hilow, fun.args = list(conf.int = 0.95)) +
+  geom_hline(aes(yintercept = true_kid_validity, color = "true odds ratio,\nchildren", 
+                 linetype = "true odds ratio,\nchildren")) +
+  theme_classic(base_size = 7) +
+  scale_color_manual(name = " ", values = c("true odds ratio,\nchildren" = "blue")) + 
+  scale_linetype_manual(name = " ", values = c("true odds ratio,\nchildren" = 2))+ 
+  ylab("Predictive validity (odds ratio)") + 
+  xlab("Noise level") +
+  theme(legend.position = "bottom")
+
+figs2_new <- psim_1 + psim_2+
+  plot_layout(widths = c(2, 1))
+
+ggsave("../figures/Study3_SI_FigS2.pdf", figs2_new, width = 18, height = 10, units = "cm")
+
 
 ######## 1. Control for differences in learning ####
 
@@ -380,7 +611,7 @@ means %>% ungroup() %>% cohens_d(Av_guess_error ~ 1, mu = 0)
 
 
 # difference between ages -- NO DIFFERENCE
-t_result2 <- t.test(Av_guess_error ~ AgeGroup, data = means)
+(t_result2 <- t.test(Av_guess_error ~ AgeGroup, data = means, var.equal = TRUE))
 means %>% ungroup() %>% cohens_d(Av_guess_error ~ AgeGroup)
 
 
@@ -496,7 +727,7 @@ bottomplot
 s2 <- (p1+p2)/bottomplot + plot_layout(guides = "collect")
 s2
 
-ggsave("../figures/Study3_SI_FigS2.pdf", s2, width = 18, height = 13, units = "cm")
+ggsave("../figures/Study3_SI_FigS3.pdf", s2, width = 18, height = 13, units = "cm")
 
 
 ######### SI ##########
@@ -628,6 +859,8 @@ Data3$Curiosity_Ord <- as.ordered(Data3$Curiosity)
 Data3kids$Curiosity_Ord <- as.ordered(Data3kids$Curiosity)
 Data3adults$Curiosity_Ord <- as.ordered(Data3adults$Curiosity)
 
+Data3$AgeGroup <- factor(Data3$AgeGroup, levels = c("Adults", "Children"))
+
 full_mod <- clmm(Curiosity_Ord ~ (RPE_MAP_abs_z + Entropy_theta_z + 
                    Entropy_z_z + EIG_theta_z)*AgeGroup + 
                    (1|oid), data=Data3)
@@ -665,5 +898,5 @@ p_supp_ordinal <- plot_summs(adult_mod, kid_mod, model.names = c("Adults", "Chil
   xlab(expression("Regression coefficient (log odds)"))
 p_supp_ordinal
 
-ggsave("../figures/Study3_SI_FigS3.pdf", p_supp_ordinal, width = 11, height = 8, units = "cm")
+ggsave("../figures/Study3_SI_FigS4.pdf", p_supp_ordinal, width = 11, height = 8, units = "cm")
 
